@@ -27,8 +27,11 @@ namespace dromozoa {
   class operations_handle {
   public:
     operations_handle();
+    void ref(lua_State* L, int index);
+    void unref();
     struct fuse_operations* get();
   private:
+    luaX_reference<> ref_;
     struct fuse_operations operations_;
   };
 
