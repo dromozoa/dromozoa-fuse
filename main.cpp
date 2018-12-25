@@ -17,15 +17,16 @@
 
 #include "common.hpp"
 
-#include <iostream>
 #include <vector>
 #include <string>
 
 namespace dromozoa {
+  extern struct fuse_operations operations;
+
   namespace {
     void impl_main(lua_State* L) {
       luaL_checktype(L, 1, LUA_TTABLE);
-      operations_handle* ops = check_operations_handle(L, 2);
+      luaL_checktype(L, 2, LUA_TTABLE);
 
       std::vector<std::string> args;
       for (int i = 1; ; ++i) {
@@ -48,7 +49,8 @@ namespace dromozoa {
       }
       argv.push_back(0);
 
-      int result = fuse_main(argv.size() - 1, argv.data(), ops->get(), ops);
+      scoped_ptr<luaX_reference<> > self(new luaX_reference<>(L, 2));
+      int result = fuse_main(argv.size() - 1, argv.data(), &operations, self.release());
       luaX_push(L, result);
     }
   }

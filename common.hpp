@@ -18,24 +18,12 @@
 #ifndef DROMOZOA_COMMON_HPP
 #define DROMOZOA_COMMON_HPP
 
-#define FUSE_USE_VERSION 29
+#define FUSE_USE_VERSION 28
 #include <fuse.h>
 
 #include <dromozoa/bind.hpp>
 
 namespace dromozoa {
-  class operations_handle {
-  public:
-    operations_handle();
-    void ref(lua_State* L, int index);
-    void unref();
-    struct fuse_operations* get();
-  private:
-    luaX_reference<> ref_;
-    struct fuse_operations operations_;
-  };
-
-  operations_handle* check_operations_handle(lua_State* L, int arg);
 }
 
 #endif

@@ -17,33 +17,35 @@
 
 #include "common.hpp"
 
+#include <string.h>
+
+// int (*getattr) (const char *, struct stat *);
+// int (*readdir) (const char *, void *, fuse_fill_dir_t, off_t, struct fuse_file_info *);
+// int (*open) (const char *, struct fuse_file_info *);
+// int (*read) (const char *, char *, size_t, off_t, struct fuse_file_info *);
+
 namespace dromozoa {
   namespace {
-    void impl_gc(lua_State* L) {
-      check_operations_handle(L, 1)->~operations_handle();
+    void* init(struct fuse_conn_info*) {
+      fuse_context* context = fuse_get_context();
+      return context->private_data;
     }
 
-    void impl_call(lua_State* L) {
-      luaX_new<operations_handle>(L);
-      luaX_set_metatable(L, "dromozoa.fuse.operations");
+    void destroy(void* userdata) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(userdata);
+      self->~luaX_reference();
+    }
+
+    struct fuse_operations construct_operations() {
+      struct fuse_operations operations;
+      memset(&operations, sizeof(operations), 0);
+
+      operations.init = init;
+      operations.destroy = destroy;
+
+      return operations;
     }
   }
 
-  operations_handle* check_operations_handle(lua_State* L, int arg) {
-    return luaX_check_udata<operations_handle>(L, arg, "dromozoa.fuse.operations");
-  }
-
-  void initialize_operations(lua_State* L) {
-    lua_newtable(L);
-    {
-      luaL_newmetatable(L, "dromozoa.fuse.operations");
-      lua_pushvalue(L, -2);
-      luaX_set_field(L, -2, "__index");
-      luaX_set_field(L, -1, "__gc", impl_gc);
-      lua_pop(L, 1);
-
-      luaX_set_metafield(L, -1, "__call", impl_call);
-    }
-    luaX_set_field(L, -2, "operations");
-  }
+  struct fuse_operations operations = construct_operations();
 }

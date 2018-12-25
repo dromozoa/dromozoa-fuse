@@ -17,11 +17,9 @@
 
 local fuse = require "dromozoa.fuse"
 
-local ops = fuse.operations()
-
 local args = {}
 for i = 0, #arg do
   args[#args + 1] = arg[i]
 end
-local result = fuse.main(args, ops)
+local result = fuse.main(args, {})
 print(result)
