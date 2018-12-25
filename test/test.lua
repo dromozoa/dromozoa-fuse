@@ -31,8 +31,8 @@ local ops = {}
 function ops:getattr(path)
   if path == "/" then
     return {
-      st_mode = unix.bor(unix.S_IFREG, tonumber "0644");
-      st_nlink = 1;
+      st_mode = unix.bor(unix.S_IFDIR, tonumber("0755", 8));
+      st_nlink = 2;
       st_uid = uid;
       st_gid = gid;
       st_atime = t;

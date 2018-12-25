@@ -94,6 +94,10 @@ namespace dromozoa {
       return -ENOSYS;
     }
 
+    int open(const char* path, struct fuse_file_info* info) {
+      return 0;
+    }
+
     struct fuse_operations construct_operations() {
       struct fuse_operations operations;
       memset(&operations, 0, sizeof(operations));
@@ -102,6 +106,7 @@ namespace dromozoa {
       operations.destroy = destroy;
       operations.getattr = getattr;
       operations.readdir = readdir;
+      operations.open = open;
 
       return operations;
     }
