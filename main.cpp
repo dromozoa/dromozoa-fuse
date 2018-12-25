@@ -17,10 +17,41 @@
 
 #include "common.hpp"
 
+#include <iostream>
+#include <vector>
+#include <string>
+
 namespace dromozoa {
   namespace {
-    void impl_main(lua_State*) {
-      // args
+    void impl_main(lua_State* L) {
+      luaL_checktype(L, 1, LUA_TTABLE);
+      operations_handle* operations = check_operations_handle(L, 2);
+
+      std::vector<std::string> args;
+      for (int i = 1; ; ++i) {
+        luaX_get_field(L, 1, i);
+        if (const char* p = lua_tostring(L, -1)) {
+          args.push_back(p);
+          lua_pop(L, 1);
+        } else {
+          lua_pop(L, 1);
+          break;
+        }
+      }
+
+      std::vector<std::string>::const_iterator i = args.begin();
+      std::vector<std::string>::const_iterator end = args.end();
+
+      std::vector<char*> argv;
+      for (; i != end; ++i) {
+        argv.push_back(const_cast<char*>(i->c_str()));
+      }
+      argv.push_back(0);
+
+      void* data = reinterpret_cast<void*>(0xFEEDFACE);
+      std::cerr << "main " << data << "\n";
+      int result = fuse_main(argv.size() - 1, argv.data(), operations->get(), data);
+      luaX_push(L, result);
     }
   }
 

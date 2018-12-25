@@ -22,7 +22,9 @@ LDLIBS += -lfuse -ldl
 
 OBJS = \
 	main.o \
-	module.o
+	module.o \
+	operations.o \
+	operations_handle.o
 TARGET = fuse.so
 
 all: $(TARGET)
