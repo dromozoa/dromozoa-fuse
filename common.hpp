@@ -24,6 +24,14 @@
 #include <dromozoa/bind.hpp>
 
 namespace dromozoa {
+  class file_info_reference {
+  public:
+    explicit file_info_reference(fuse_file_info* file_info);
+    void reset();
+    fuse_file_info* get() const;
+  private:
+    fuse_file_info* file_info_;
+  };
 }
 
 #endif
