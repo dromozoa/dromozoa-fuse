@@ -17,33 +17,132 @@
 
 #include "common.hpp"
 
+#include <errno.h>
+#include <string.h>
+
+#include <iostream>
+
+// int (*getattr) (const char *, struct stat *);
+// int (*readdir) (const char *, void *, fuse_fill_dir_t, off_t, struct fuse_file_info *);
+// int (*open) (const char *, struct fuse_file_info *);
+// int (*read) (const char *, char *, size_t, off_t, struct fuse_file_info *);
+
 namespace dromozoa {
   namespace {
-    void impl_gc(lua_State* L) {
-      check_operations_handle(L, 1)->~operations_handle();
+    void* init(struct fuse_conn_info*) {
+      return fuse_get_context()->private_data;
     }
 
-    void impl_call(lua_State* L) {
-      luaX_new<operations_handle>(L);
-      luaX_set_metatable(L, "dromozoa.fuse.operations");
+    void destroy(void* userdata) {
+      scoped_ptr<luaX_reference<> > self(static_cast<luaX_reference<>*>(userdata));
     }
-  }
 
-  operations_handle* check_operations_handle(lua_State* L, int arg) {
-    return luaX_check_udata<operations_handle>(L, arg, "dromozoa.fuse.operations");
-  }
+    template <class T>
+    void set_integer_field(lua_State* L, int index, const char* name, T& target) {
+      target = luaX_opt_integer_field<T>(L, index, name, 0);
+    }
 
-  void initialize_operations(lua_State* L) {
-    lua_newtable(L);
-    {
-      luaL_newmetatable(L, "dromozoa.fuse.operations");
+    #define DROMOZOA_SET_INTEGER_FIELD(name) \
+      set_integer_field(L, index, #name, target->name) \
+      /**/
+
+    void convert(lua_State* L, int index, struct stat* target) {
+      memset(target, 0, sizeof(*target));
+      DROMOZOA_SET_INTEGER_FIELD(st_dev);
+      DROMOZOA_SET_INTEGER_FIELD(st_ino);
+      DROMOZOA_SET_INTEGER_FIELD(st_mode);
+      DROMOZOA_SET_INTEGER_FIELD(st_nlink);
+      DROMOZOA_SET_INTEGER_FIELD(st_uid);
+      DROMOZOA_SET_INTEGER_FIELD(st_gid);
+      DROMOZOA_SET_INTEGER_FIELD(st_size);
+      DROMOZOA_SET_INTEGER_FIELD(st_atime);
+      DROMOZOA_SET_INTEGER_FIELD(st_mtime);
+      DROMOZOA_SET_INTEGER_FIELD(st_ctime);
+      DROMOZOA_SET_INTEGER_FIELD(st_blksize);
+      DROMOZOA_SET_INTEGER_FIELD(st_blocks);
+    }
+
+    int getattr(const char* path, struct stat* buf) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      if (self->get_field(L) == LUA_TNIL) {
+        return -ENOSYS;
+      }
+      if (luaX_get_field(L, -1, "getattr") == LUA_TNIL) {
+        return -ENOSYS;
+      }
       lua_pushvalue(L, -2);
-      luaX_set_field(L, -2, "__index");
-      luaX_set_field(L, -1, "__gc", impl_gc);
-      lua_pop(L, 1);
-
-      luaX_set_metafield(L, -1, "__call", impl_call);
+      luaX_push(L, path);
+      if (lua_pcall(L, 2, 1, 0) == 0) {
+        if (lua_istable(L, -1)) {
+          convert(L, -1, buf);
+          return 0;
+        } else if (luaX_is_integer(L, -1)) {
+          return lua_tointeger(L, -1);
+        }
+        return -ENOSYS;
+      } else {
+        return -ENOSYS;
+      }
     }
-    luaX_set_field(L, -2, "operations");
+
+    int getxattr(const char* path, const char* name, char* value, size_t size) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      if (self->get_field(L) == LUA_TNIL) {
+        return -ENOSYS;
+      }
+      if (luaX_get_field(L, -1, "getxattr") == LUA_TNIL) {
+        return -ENOSYS;
+      }
+      lua_pushvalue(L, -2);
+      luaX_push(L, path, name);
+      if (lua_pcall(L, 3, 1, 0) == 0) {
+        if (luaX_is_integer(L, -1)) {
+          return lua_tointeger(L, -1);
+        } else if (luaX_string_reference result = luaX_to_string(L, -1)) {
+          if (result.size() < size) {
+            memcpy(value, result.data(), result.size());
+            value[result.size()] = '\0';
+            return result.size();
+          } else {
+            return -ERANGE;
+          }
+        } else {
+          return -ENOTSUP;
+        }
+      } else {
+        return -ENOSYS;
+      }
+    }
+
+    int readdir(const char* path, void* buffer, fuse_fill_dir_t fill, off_t offset, struct fuse_file_info* fi) {
+      if (path) {
+        std::cout << path << "\n";
+      }
+      return -ENOSYS;
+    }
+
+    int open(const char* path, struct fuse_file_info* info) {
+      return 0;
+    }
+
+    struct fuse_operations construct_operations() {
+      struct fuse_operations operations;
+      memset(&operations, 0, sizeof(operations));
+
+      operations.init = init;
+      operations.destroy = destroy;
+      operations.getattr = getattr;
+      operations.readdir = readdir;
+      operations.open = open;
+      operations.getxattr = getxattr;
+
+      return operations;
+    }
   }
+
+  struct fuse_operations operations = construct_operations();
 }

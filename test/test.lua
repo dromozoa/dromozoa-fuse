@@ -16,12 +16,38 @@
 -- along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
 local fuse = require "dromozoa.fuse"
-
-local ops = fuse.operations()
+local unix = require "dromozoa.unix"
 
 local args = {}
 for i = 0, #arg do
   args[#args + 1] = arg[i]
 end
+
+local uid = unix.getuid();
+local gid = unix.getgid();
+local t = os.time()
+
+local ops = {}
+function ops:getattr(path)
+  if path == "/" then
+    return {
+      st_mode = unix.bor(unix.S_IFDIR, tonumber("0755", 8));
+      st_nlink = 2;
+      st_uid = uid;
+      st_gid = gid;
+      st_atime = t;
+      st_mtime = t;
+      st_ctime = t;
+      st_blocks = 0;
+    }
+  else
+    return -unix.ENOENT
+  end
+end
+function ops:getxattr(path, name)
+  print("getattr", path, name)
+  return -unix.ENOTSUP
+end
+
 local result = fuse.main(args, ops)
 print(result)
