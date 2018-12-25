@@ -15,9 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "common.hpp"
+#ifndef DROMOZOA_COMMON_HPP
+#define DROMOZOA_COMMON_HPP
 
-extern "C" int luaopen_dromozoa_fuse(lua_State* L) {
-  lua_newtable(L);
-  return 1;
-}
+#include <dromozoa/bind.hpp>
+
+#endif
