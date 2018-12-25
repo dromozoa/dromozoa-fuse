@@ -21,10 +21,10 @@ LDFLAGS += -L$(LUA_LIBDIR) $(LIBFLAG)
 LDLIBS += -lfuse -ldl
 
 OBJS = \
+	handle.o \
 	main.o \
 	module.o \
-	operations.o \
-	operations_handle.o
+	operations.o
 TARGET = fuse.so
 
 all: $(TARGET)
