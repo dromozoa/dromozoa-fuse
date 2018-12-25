@@ -23,4 +23,5 @@ local args = {}
 for i = 0, #arg do
   args[#args + 1] = arg[i]
 end
-fuse.main(args, ops)
+local result = fuse.main(args, ops)
+print(result)
