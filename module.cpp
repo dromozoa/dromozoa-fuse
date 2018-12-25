@@ -17,7 +17,16 @@
 
 #include "common.hpp"
 
+namespace dromozoa {
+  void initialize_main(lua_State* L);
+
+  void initialize(lua_State* L) {
+    initialize_main(L);
+  }
+}
+
 extern "C" int luaopen_dromozoa_fuse(lua_State* L) {
   lua_newtable(L);
+  dromozoa::initialize(L);
   return 1;
 }

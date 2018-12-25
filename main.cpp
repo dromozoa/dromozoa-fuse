@@ -15,14 +15,16 @@
 // You should have received a copy of the GNU General Public License
 // along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef DROMOZOA_COMMON_HPP
-#define DROMOZOA_COMMON_HPP
-
-#include <fuse.h>
-
-#include <dromozoa/bind.hpp>
+#include "common.hpp"
 
 namespace dromozoa {
-}
+  namespace {
+    void impl_main(lua_State*) {
+      // args
+    }
+  }
 
-#endif
+  void initialize_main(lua_State* L) {
+    luaX_set_field(L, -1, "main", impl_main);
+  }
+}
