@@ -17,7 +17,10 @@
 
 #include "common.hpp"
 
+#include <errno.h>
 #include <string.h>
+
+#include <iostream>
 
 // int (*getattr) (const char *, struct stat *);
 // int (*readdir) (const char *, void *, fuse_fill_dir_t, off_t, struct fuse_file_info *);
@@ -27,21 +30,78 @@
 namespace dromozoa {
   namespace {
     void* init(struct fuse_conn_info*) {
-      fuse_context* context = fuse_get_context();
-      return context->private_data;
+      return fuse_get_context()->private_data;
     }
 
     void destroy(void* userdata) {
-      luaX_reference<>* self = static_cast<luaX_reference<>*>(userdata);
-      self->~luaX_reference();
+      scoped_ptr<luaX_reference<> > self(static_cast<luaX_reference<>*>(userdata));
+    }
+
+    template <class T>
+    void set_integer_field(lua_State* L, int index, const char* name, T& target) {
+      target = luaX_opt_integer_field<T>(L, index, name, 0);
+    }
+
+    #define DROMOZOA_SET_INTEGER_FIELD(name) \
+      set_integer_field(L, index, #name, target->name) \
+      /**/
+
+    void convert(lua_State* L, int index, struct stat* target) {
+      memset(target, 0, sizeof(*target));
+      DROMOZOA_SET_INTEGER_FIELD(st_dev);
+      DROMOZOA_SET_INTEGER_FIELD(st_ino);
+      DROMOZOA_SET_INTEGER_FIELD(st_mode);
+      DROMOZOA_SET_INTEGER_FIELD(st_nlink);
+      DROMOZOA_SET_INTEGER_FIELD(st_uid);
+      DROMOZOA_SET_INTEGER_FIELD(st_gid);
+      DROMOZOA_SET_INTEGER_FIELD(st_size);
+      DROMOZOA_SET_INTEGER_FIELD(st_atime);
+      DROMOZOA_SET_INTEGER_FIELD(st_mtime);
+      DROMOZOA_SET_INTEGER_FIELD(st_ctime);
+      DROMOZOA_SET_INTEGER_FIELD(st_blksize);
+      DROMOZOA_SET_INTEGER_FIELD(st_blocks);
+    }
+
+    int getattr(const char* path, struct stat* buf) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      if (self->get_field(L) == LUA_TNIL) {
+        return -ENOSYS;
+      }
+      if (luaX_get_field(L, -1, "getattr") == LUA_TNIL) {
+        return -ENOSYS;
+      }
+      lua_pushvalue(L, -2);
+      luaX_push(L, path);
+      if (lua_pcall(L, 2, 1, 0) == 0) {
+        if (lua_istable(L, -1)) {
+          convert(L, -1, buf);
+          return 0;
+        } else if (luaX_is_integer(L, -1)) {
+          return lua_tointeger(L, -1);
+        }
+        return -ENOSYS;
+      } else {
+        return -ENOSYS;
+      }
+    }
+
+    int readdir(const char* path, void* buffer, fuse_fill_dir_t fill, off_t offset, struct fuse_file_info* fi) {
+      if (path) {
+        std::cout << path << "\n";
+      }
+      return -ENOSYS;
     }
 
     struct fuse_operations construct_operations() {
       struct fuse_operations operations;
-      memset(&operations, sizeof(operations), 0);
+      memset(&operations, 0, sizeof(operations));
 
       operations.init = init;
       operations.destroy = destroy;
+      operations.getattr = getattr;
+      operations.readdir = readdir;
 
       return operations;
     }
