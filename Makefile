@@ -21,7 +21,6 @@ LDFLAGS += -L$(LUA_LIBDIR) $(LIBFLAG)
 LDLIBS += -lfuse -ldl
 
 OBJS = \
-	handle.o \
 	main.o \
 	module.o \
 	operations.o
