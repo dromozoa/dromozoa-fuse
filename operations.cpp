@@ -42,6 +42,9 @@ namespace dromozoa {
       target = luaX_opt_integer_field<T>(L, index, name, 0);
     }
 
+    // to_tuple
+    // to_table
+
     #define DROMOZOA_SET_INTEGER_FIELD(name) \
       set_integer_field(L, index, #name, target->name) \
       /**/
