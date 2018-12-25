@@ -44,6 +44,10 @@ function ops:getattr(path)
     return -unix.ENOENT
   end
 end
+function ops:getxattr(path, name)
+  print("getattr", path, name)
+  return -unix.ENOTSUP
+end
 
 local result = fuse.main(args, ops)
 print(result)
