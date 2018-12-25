@@ -18,17 +18,32 @@
 #include "common.hpp"
 
 namespace dromozoa {
-  void initialize_main(lua_State* L);
-  void initialize_operations(lua_State* L);
+  namespace {
+    void impl_gc(lua_State* L) {
+      check_operations_handle(L, 1)->~operations_handle();
+    }
 
-  void initialize(lua_State* L) {
-    initialize_main(L);
-    initialize_operations(L);
+    void impl_call(lua_State* L) {
+      luaX_new<operations_handle>(L);
+      luaX_set_metatable(L, "dromozoa.fuse.operations");
+    }
   }
-}
 
-extern "C" int luaopen_dromozoa_fuse(lua_State* L) {
-  lua_newtable(L);
-  dromozoa::initialize(L);
-  return 1;
+  operations_handle* check_operations_handle(lua_State* L, int arg) {
+    return luaX_check_udata<operations_handle>(L, arg, "dromozoa.fuse.operations");
+  }
+
+  void initialize_operations(lua_State* L) {
+    lua_newtable(L);
+    {
+      luaL_newmetatable(L, "dromozoa.fuse.operations");
+      lua_pushvalue(L, -2);
+      luaX_set_field(L, -2, "__index");
+      luaX_set_field(L, -1, "__gc", impl_gc);
+      lua_pop(L, 1);
+
+      luaX_set_metafield(L, -1, "__call", impl_call);
+    }
+    luaX_set_field(L, -2, "operations");
+  }
 }

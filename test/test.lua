@@ -16,3 +16,11 @@
 -- along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
 local fuse = require "dromozoa.fuse"
+
+local ops = fuse.operations()
+
+local args = {}
+for i = 0, #arg do
+  args[#args + 1] = arg[i]
+end
+fuse.main(args, ops)

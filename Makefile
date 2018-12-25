@@ -16,12 +16,15 @@
 # along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
 CPPFLAGS += -Ibind -I$(LUA_INCDIR)
-CXXFLAGS += -Wall -W $(CFLAGS)
+CXXFLAGS += -Wall -W $(CFLAGS) `pkg-config fuse --cflags`
 LDFLAGS += -L$(LUA_LIBDIR) $(LIBFLAG)
 LDLIBS += -lfuse -ldl
 
 OBJS = \
-	module.o
+	main.o \
+	module.o \
+	operations.o \
+	operations_handle.o
 TARGET = fuse.so
 
 all: $(TARGET)
