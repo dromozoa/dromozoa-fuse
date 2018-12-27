@@ -24,7 +24,23 @@
 #include <dromozoa/bind.hpp>
 
 namespace dromozoa {
-  class file_info_handle {
+  class handle {
+  public:
+    virtual ~handle() = 0;
+    virtual void reset() = 0;
+  };
+
+  class scoped_handle {
+  public:
+    explicit scoped_handle(handle* ptr);
+    ~scoped_handle();
+  private:
+    handle* ptr_;
+    scoped_handle(const scoped_handle&);
+    scoped_handle& operator=(const scoped_handle&);
+  };
+
+  class file_info_handle : public handle {
   public:
     explicit file_info_handle(fuse_file_info* ptr);
     void reset();

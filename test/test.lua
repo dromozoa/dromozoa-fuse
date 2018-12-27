@@ -49,5 +49,11 @@ function ops:getxattr(path, name)
   return -unix.ENOTSUP
 end
 
+function ops:readdir(path, fill, offset, fi)
+  print("readdir", path, fill, offset, fi)
+  return -unix.ENOSYS
+end
+
+
 local result = fuse.main(args, ops)
 print(result)
