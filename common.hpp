@@ -24,14 +24,19 @@
 #include <dromozoa/bind.hpp>
 
 namespace dromozoa {
-  class file_info_reference {
+  class file_info_handle {
   public:
-    explicit file_info_reference(fuse_file_info* file_info);
+    explicit file_info_handle(fuse_file_info* ptr);
     void reset();
     fuse_file_info* get() const;
   private:
-    fuse_file_info* file_info_;
+    fuse_file_info* ptr_;
+    file_info_handle(const file_info_handle&);
+    file_info_handle& operator=(const file_info_handle&);
   };
+
+  file_info_handle* new_file_info_handle(lua_State* L, fuse_file_info* ptr);
+  file_info_handle* check_file_info_handle(lua_State* L, int arg);
 }
 
 #endif

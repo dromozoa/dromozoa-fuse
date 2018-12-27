@@ -121,14 +121,32 @@ namespace dromozoa {
       }
     }
 
-    int readdir(const char* path, void* buffer, fuse_fill_dir_t fill, off_t offset, struct fuse_file_info* fi) {
-      if (path) {
-        std::cout << path << "\n";
-      }
-      return -ENOSYS;
-    }
+    // int readdir(const char* path, void* buffer, fuse_fill_dir_t fill, off_t offset, struct fuse_file_info* fi) {
+    //   if (path) {
+    //     std::cout << path << "\n";
+    //   }
+    //   return -ENOSYS;
+    // }
 
-    int open(const char* path, struct fuse_file_info* info) {
+    int open(const char* path, struct fuse_file_info* file_info) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      if (self->get_field(L) == LUA_TNIL) {
+        return -ENOSYS;
+      }
+      if (luaX_get_field(L, -1, "open") == LUA_TNIL) {
+        return -ENOSYS;
+      }
+      lua_pushvalue(L, -2);
+      luaX_push(L, path);
+      file_info_handle* handle = new_file_info_handle(L, file_info);
+      if (lua_pcall(L, 3, 1, 0) == 0) {
+        if (luaX_is_integer(L, -1)) {
+          return lua_tointeger(L, -1);
+        }
+      }
+      handle->reset();
       return 0;
     }
 
@@ -139,7 +157,7 @@ namespace dromozoa {
       operations.init = init;
       operations.destroy = destroy;
       operations.getattr = getattr;
-      operations.readdir = readdir;
+      // operations.readdir = readdir;
       operations.open = open;
       operations.getxattr = getxattr;
 

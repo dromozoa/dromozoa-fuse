@@ -18,9 +18,11 @@
 #include "common.hpp"
 
 namespace dromozoa {
+  void initialize_file_info(lua_State* L);
   void initialize_main(lua_State* L);
 
   void initialize(lua_State* L) {
+    initialize_file_info(L);
     initialize_main(L);
   }
 }
