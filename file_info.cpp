@@ -58,7 +58,7 @@ namespace dromozoa {
       }
     }
 
-    void impl_newindex(lua_State* L) {
+    void impl_newindex(lua_State*) {
     }
   }
 
@@ -73,5 +73,31 @@ namespace dromozoa {
     luaX_set_field(L, -1, "__index", impl_index);
     luaX_set_field(L, -1, "__newindex", impl_newindex);
     lua_pop(L, 1);
+  }
+
+  void new_file_info(lua_State* L, fuse_file_info* that) {
+    lua_newtable(L);
+    luaX_set_field(L, -1, "flags", that->flags);
+    luaX_set_field(L, -1, "writepage", that->writepage);
+    luaX_set_field(L, -1, "direct_io", that->direct_io);
+    luaX_set_field(L, -1, "keep_cache", that->keep_cache);
+    luaX_set_field(L, -1, "flush", that->flush);
+    luaX_set_field(L, -1, "nonseekable", that->nonseekable);
+    luaX_set_field(L, -1, "flock_release", that->flock_release);
+    luaX_set_field(L, -1, "fh", that->fh);
+    luaX_set_field(L, -1, "lock_owner", that->lock_owner);
+  }
+
+  void set_file_info(lua_State* L, int arg, fuse_file_info* that) {
+    luaL_checktype(L, arg, LUA_TTABLE);
+    that->flags = luaX_opt_integer_field(L, arg, "flags", that->flags);
+    that->writepage = luaX_opt_integer_field(L, arg, "writepage", that->writepage);
+    that->direct_io = luaX_opt_integer_field(L, arg, "direct_io", that->direct_io);
+    that->keep_cache = luaX_opt_integer_field(L, arg, "keep_cache", that->keep_cache);
+    that->flush = luaX_opt_integer_field(L, arg, "flush", that->flush);
+    that->nonseekable = luaX_opt_integer_field(L, arg, "nonseekable", that->nonseekable);
+    that->flock_release = luaX_opt_integer_field(L, arg, "nonseekable", that->flock_release);
+    that->fh = luaX_opt_integer_field(L, arg, "fh", that->fh);
+    that->lock_owner = luaX_opt_integer_field(L, arg, "lock_owner", that->lock_owner);
   }
 }

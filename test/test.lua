@@ -50,10 +50,10 @@ function ops:getxattr(path, name)
 end
 
 function ops:readdir(path, fill, offset, fi)
-  -- print("readdir", path, fill, offset, fi)
-  print(getmetatable(fi))
-  print("!!!!readdir flags", fi.flags)
-  print "!!!!"
+  print("readdir", path, fill, offset, fi)
+  for k, v in pairs(fi) do
+    print("!!", k, v)
+  end
   return -unix.ENOSYS
 end
 

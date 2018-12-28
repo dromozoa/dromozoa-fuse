@@ -41,6 +41,9 @@ namespace dromozoa {
   };
 
   handle* new_file_info_handle(lua_State* L, fuse_file_info* ptr);
+
+  void new_file_info(lua_State* L, fuse_file_info* that);
+  void set_file_info(lua_State* L, int arg, fuse_file_info* that);
 }
 
 #endif

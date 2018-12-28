@@ -133,7 +133,7 @@ namespace dromozoa {
       }
       lua_pushvalue(L, -2);
       luaX_push(L, path, luaX_nil, offset);
-      scoped_handle scope(new_file_info_handle(L, fi));
+      new_file_info(L, fi);
       lua_pcall(L, 5, 1, 0);
       if (path) {
         std::cout << path << "\n";
@@ -153,7 +153,7 @@ namespace dromozoa {
       }
       lua_pushvalue(L, -2);
       luaX_push(L, path);
-      scoped_handle scope(new_file_info_handle(L, file_info));
+      new_file_info(L, file_info);
       if (lua_pcall(L, 3, 1, 0) == 0) {
         if (luaX_is_integer(L, -1)) {
           return lua_tointeger(L, -1);
