@@ -50,10 +50,12 @@ function ops:getxattr(path, name)
 end
 
 function ops:readdir(path, fill, offset, fi)
-  print("readdir", path, fill, offset, fi)
+  -- print("readdir", path, fill, offset, fi)
+  print(getmetatable(fi))
+  print("!!!!readdir flags", fi.flags)
+  print "!!!!"
   return -unix.ENOSYS
 end
-
 
 local result = fuse.main(args, ops)
 print(result)

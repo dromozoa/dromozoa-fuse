@@ -153,13 +153,12 @@ namespace dromozoa {
       }
       lua_pushvalue(L, -2);
       luaX_push(L, path);
-      file_info_handle* handle = new_file_info_handle(L, file_info);
+      scoped_handle scope(new_file_info_handle(L, file_info));
       if (lua_pcall(L, 3, 1, 0) == 0) {
         if (luaX_is_integer(L, -1)) {
           return lua_tointeger(L, -1);
         }
       }
-      handle->reset();
       return 0;
     }
 
