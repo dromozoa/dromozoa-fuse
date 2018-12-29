@@ -37,11 +37,6 @@ namespace dromozoa {
       scoped_ptr<luaX_reference<> > self(static_cast<luaX_reference<>*>(userdata));
     }
 
-    template <class T>
-    void set_integer_field(lua_State* L, int index, const char* name, T& target) {
-      target = luaX_opt_integer_field<T>(L, index, name, 0);
-    }
-
     int getattr(const char* path, struct stat* buf) {
       luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
