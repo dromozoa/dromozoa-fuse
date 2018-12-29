@@ -27,6 +27,10 @@
 // int (*open) (const char *, struct fuse_file_info *);
 // int (*read) (const char *, char *, size_t, off_t, struct fuse_file_info *);
 
+#define DROMOZOA_SET_OPERATION(name) \
+  operations.name = name \
+  /**/
+
 namespace dromozoa {
   namespace {
     void* init(struct fuse_conn_info*) {
@@ -141,12 +145,12 @@ namespace dromozoa {
       struct fuse_operations operations;
       memset(&operations, 0, sizeof(operations));
 
-      operations.init = init;
-      operations.destroy = destroy;
-      operations.getattr = getattr;
-      operations.readdir = readdir;
-      operations.open = open;
-      operations.getxattr = getxattr;
+      DROMOZOA_SET_OPERATION(init);
+      DROMOZOA_SET_OPERATION(destroy);
+      DROMOZOA_SET_OPERATION(getattr);
+      DROMOZOA_SET_OPERATION(readdir);
+      DROMOZOA_SET_OPERATION(open);
+      DROMOZOA_SET_OPERATION(getxattr);
 
       return operations;
     }
