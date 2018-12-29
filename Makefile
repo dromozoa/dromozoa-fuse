@@ -23,6 +23,7 @@ LDLIBS += -lfuse -ldl
 OBJS = \
 	file_info.o \
 	fill_dir.o \
+	handle.o \
 	main.o \
 	module.o \
 	operations.o

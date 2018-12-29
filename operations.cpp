@@ -121,7 +121,7 @@ namespace dromozoa {
       }
     }
 
-    int readdir(const char* path, void* buffer, fuse_fill_dir_t fill, off_t offset, struct fuse_file_info* file_info) {
+    int readdir(const char* path, void* buffer, fuse_fill_dir_t function, off_t offset, struct fuse_file_info* file_info) {
       luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
@@ -129,11 +129,15 @@ namespace dromozoa {
         return -ENOSYS;
       }
       lua_pushvalue(L, -2);
-      luaX_push(L, path, luaX_nil, offset);
+      luaX_push(L, path);
+      scoped_handle handle(new_fill_dir(L, function, buffer));
+      luaX_push(L, offset);
       new_file_info(L, file_info);
       if (lua_pcall(L, 5, 1, 0) == 0) {
         // set_file_info(L, ???)
-
+        if (luaX_is_integer(L, -1)) {
+          return lua_tointeger(L, -1);
+        }
         // return 0;
       }
       return -ENOSYS;
