@@ -40,7 +40,7 @@ namespace dromozoa {
     scoped_handle& operator=(const scoped_handle&);
   };
 
-  void new_file_info(lua_State* L, fuse_file_info* that);
+  int new_file_info(lua_State* L, fuse_file_info* that);
   void set_file_info(lua_State* L, int arg, fuse_file_info* that);
   handle* new_fill_dir(lua_State* L, fuse_fill_dir_t function, void* buffer);
 }

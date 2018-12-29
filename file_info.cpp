@@ -18,17 +18,19 @@
 #include "common.hpp"
 
 namespace dromozoa {
-  void new_file_info(lua_State* L, fuse_file_info* that) {
+  int new_file_info(lua_State* L, fuse_file_info* that) {
     lua_newtable(L);
-    luaX_set_field(L, -1, "flags", that->flags);
-    luaX_set_field(L, -1, "writepage", that->writepage);
-    luaX_set_field(L, -1, "direct_io", that->direct_io);
-    luaX_set_field(L, -1, "keep_cache", that->keep_cache);
-    luaX_set_field(L, -1, "flush", that->flush);
-    luaX_set_field(L, -1, "nonseekable", that->nonseekable);
-    luaX_set_field(L, -1, "flock_release", that->flock_release);
-    luaX_set_field(L, -1, "fh", that->fh);
-    luaX_set_field(L, -1, "lock_owner", that->lock_owner);
+    int index = lua_gettop(L);
+    luaX_set_field(L, index, "flags", that->flags);
+    luaX_set_field(L, index, "writepage", that->writepage);
+    luaX_set_field(L, index, "direct_io", that->direct_io);
+    luaX_set_field(L, index, "keep_cache", that->keep_cache);
+    luaX_set_field(L, index, "flush", that->flush);
+    luaX_set_field(L, index, "nonseekable", that->nonseekable);
+    luaX_set_field(L, index, "flock_release", that->flock_release);
+    luaX_set_field(L, index, "fh", that->fh);
+    luaX_set_field(L, index, "lock_owner", that->lock_owner);
+    return index;
   }
 
   void set_file_info(lua_State* L, int arg, fuse_file_info* that) {

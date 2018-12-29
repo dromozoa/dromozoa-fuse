@@ -125,17 +125,18 @@ namespace dromozoa {
       luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
+      int file_info_index = new_file_info(L, file_info);
       if (self->get_field(L) == LUA_TNIL || luaX_get_field(L, -1, "readdir") == LUA_TNIL) {
         return -ENOSYS;
       }
       lua_pushvalue(L, -2);
       luaX_push(L, path);
-      scoped_handle handle(new_fill_dir(L, function, buffer));
+      scoped_handle scope(new_fill_dir(L, function, buffer));
       luaX_push(L, offset);
-      new_file_info(L, file_info);
+      lua_pushvalue(L, file_info_index);
       if (lua_pcall(L, 5, 1, 0) == 0) {
-        // set_file_info(L, ???)
         if (luaX_is_integer(L, -1)) {
+          set_file_info(L, file_info_index, file_info);
           return lua_tointeger(L, -1);
         }
         // return 0;
