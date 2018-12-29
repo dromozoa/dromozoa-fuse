@@ -15,18 +15,27 @@
 // You should have received a copy of the GNU General Public License
 // along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef DROMOZOA_COMMON_HPP
-#define DROMOZOA_COMMON_HPP
-
-#define FUSE_USE_VERSION 28
-#include <fuse.h>
-
-#include <dromozoa/bind.hpp>
+#include "common.hpp"
 
 namespace dromozoa {
-  void new_file_info(lua_State* L, fuse_file_info* that);
-  void set_file_info(lua_State* L, int arg, fuse_file_info* that);
-  // void new_fill_dir(lua_State* L, void* that, fuse_fill_dir_t f);
-}
+  namespace {
+    class fill_dir {
+      explicit fill_dir(fuse_fill_dir_t function, void* buffer)
+        : function_(function),
+          buffer_(buffer) {}
 
-#endif
+      int operator()(const char* name, const struct stat* buffer, off_t offset) {
+        return function_(buffer_, name, buffer, offset);
+      }
+
+    public:
+      fuse_fill_dir_t function_;
+      void* buffer_;
+      fill_dir(const fill_dir&);
+      fill_dir& operator=(const fill_dir&);
+    };
+  }
+
+  void initialize_fill_dir(lua_State* L) {
+  }
+}

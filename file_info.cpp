@@ -17,8 +17,6 @@
 
 #include "common.hpp"
 
-#include <iostream>
-
 namespace dromozoa {
   void new_file_info(lua_State* L, fuse_file_info* that) {
     lua_newtable(L);
