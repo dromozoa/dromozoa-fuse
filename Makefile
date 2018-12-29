@@ -21,7 +21,7 @@ LDFLAGS += -L$(LUA_LIBDIR) $(LIBFLAG)
 LDLIBS += -lfuse -ldl
 
 OBJS = \
-	file_info.o \
+	convert.o \
 	fill_dir.o \
 	handle.o \
 	main.o \
