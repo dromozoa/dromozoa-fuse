@@ -40,6 +40,18 @@ function ops:getattr(path)
       st_ctime = t;
       st_blocks = 0;
     }
+  elseif path == "/test.txt" then
+    return {
+      st_mode = unix.bor(unix.S_IFREG, tonumber("0644", 8));
+      st_nlink = 1;
+      st_uid = uid;
+      st_gid = gid;
+      st_atime = t;
+      st_mtime = t;
+      st_ctime = t;
+      st_size = 8;
+      st_blocks = 0;
+    }
   else
     return -unix.ENOENT
   end
@@ -51,10 +63,13 @@ end
 
 function ops:readdir(path, fill, offset, fi)
   print("readdir", path, fill, offset, fi)
-  for k, v in pairs(fi) do
-    print("!!", k, v)
-  end
-  return -unix.ENOSYS
+  local r = fill(".", nil, 0)
+  print("readdir", r)
+  local r = fill("..", nil, 0)
+  print("readdir", r)
+  local r = fill("test.txt", nil, 0)
+  print("readdir", r)
+  return 0
 end
 
 local result = fuse.main(args, ops)

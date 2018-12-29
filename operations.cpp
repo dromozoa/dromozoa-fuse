@@ -37,34 +37,6 @@ namespace dromozoa {
       scoped_ptr<luaX_reference<> > self(static_cast<luaX_reference<>*>(userdata));
     }
 
-    template <class T>
-    void set_integer_field(lua_State* L, int index, const char* name, T& target) {
-      target = luaX_opt_integer_field<T>(L, index, name, 0);
-    }
-
-    // to_tuple
-    // to_table
-
-    #define DROMOZOA_SET_INTEGER_FIELD(name) \
-      set_integer_field(L, index, #name, target->name) \
-      /**/
-
-    void convert(lua_State* L, int index, struct stat* target) {
-      memset(target, 0, sizeof(*target));
-      DROMOZOA_SET_INTEGER_FIELD(st_dev);
-      DROMOZOA_SET_INTEGER_FIELD(st_ino);
-      DROMOZOA_SET_INTEGER_FIELD(st_mode);
-      DROMOZOA_SET_INTEGER_FIELD(st_nlink);
-      DROMOZOA_SET_INTEGER_FIELD(st_uid);
-      DROMOZOA_SET_INTEGER_FIELD(st_gid);
-      DROMOZOA_SET_INTEGER_FIELD(st_size);
-      DROMOZOA_SET_INTEGER_FIELD(st_atime);
-      DROMOZOA_SET_INTEGER_FIELD(st_mtime);
-      DROMOZOA_SET_INTEGER_FIELD(st_ctime);
-      DROMOZOA_SET_INTEGER_FIELD(st_blksize);
-      DROMOZOA_SET_INTEGER_FIELD(st_blocks);
-    }
-
     int getattr(const char* path, struct stat* buf) {
       luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
@@ -121,19 +93,24 @@ namespace dromozoa {
       }
     }
 
-    int readdir(const char* path, void* buffer, fuse_fill_dir_t fill, off_t offset, struct fuse_file_info* file_info) {
+    int readdir(const char* path, void* buffer, fuse_fill_dir_t function, off_t offset, struct fuse_file_info* file_info) {
       luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
+      int file_info_index = convert(L, file_info);
       if (self->get_field(L) == LUA_TNIL || luaX_get_field(L, -1, "readdir") == LUA_TNIL) {
         return -ENOSYS;
       }
       lua_pushvalue(L, -2);
-      luaX_push(L, path, luaX_nil, offset);
-      new_file_info(L, file_info);
+      luaX_push(L, path);
+      scoped_handle scope(new_fill_dir(L, function, buffer));
+      luaX_push(L, offset);
+      lua_pushvalue(L, file_info_index);
       if (lua_pcall(L, 5, 1, 0) == 0) {
-        // set_file_info(L, ???)
-
+        if (luaX_is_integer(L, -1)) {
+          convert(L, file_info_index, file_info);
+          return lua_tointeger(L, -1);
+        }
         // return 0;
       }
       return -ENOSYS;
@@ -151,7 +128,7 @@ namespace dromozoa {
       }
       lua_pushvalue(L, -2);
       luaX_push(L, path);
-      new_file_info(L, file_info);
+      convert(L, file_info);
       if (lua_pcall(L, 3, 1, 0) == 0) {
         if (luaX_is_integer(L, -1)) {
           return lua_tointeger(L, -1);

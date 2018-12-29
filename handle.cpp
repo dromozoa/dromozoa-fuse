@@ -15,36 +15,15 @@
 // You should have received a copy of the GNU General Public License
 // along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef DROMOZOA_COMMON_HPP
-#define DROMOZOA_COMMON_HPP
-
-#define FUSE_USE_VERSION 28
-#include <fuse.h>
-
-#include <dromozoa/bind.hpp>
+#include "common.hpp"
 
 namespace dromozoa {
-  class handle {
-  public:
-    virtual ~handle() = 0;
-    virtual void reset() = 0;
-  };
+  handle::~handle() {}
 
-  class scoped_handle {
-  public:
-    explicit scoped_handle(handle* ptr);
-    ~scoped_handle();
-  private:
-    handle* ptr_;
-    scoped_handle(const scoped_handle&);
-    scoped_handle& operator=(const scoped_handle&);
-  };
+  scoped_handle::scoped_handle(handle* ptr)
+    : ptr_(ptr) {}
 
-  int convert(lua_State* L, const fuse_file_info* that);
-  bool convert(lua_State* L, int index, fuse_file_info* that);
-  bool convert(lua_State* L, int index, struct stat* that);
-
-  handle* new_fill_dir(lua_State* L, fuse_fill_dir_t function, void* buffer);
+  scoped_handle::~scoped_handle() {
+    ptr_->reset();
+  }
 }
-
-#endif
