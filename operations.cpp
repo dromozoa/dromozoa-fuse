@@ -161,6 +161,33 @@ namespace dromozoa {
       return -ENOSYS;
     }
 
+    int read(const char* path, char* buffer, size_t size, off_t offset, struct fuse_file_info* info) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      int info_index = convert(L, info);
+      if (check(self, L, "read")) {
+        luaX_push(L, path, size, offset);
+        lua_pushvalue(L, info_index);
+        if (lua_pcall(L, 5, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            convert(L, info_index, info);
+            return lua_tointeger(L, -1);
+          } else if (luaX_string_reference result = luaX_to_string(L, -1)) {
+            memset(buffer, 0, size);
+            // TODO check string size
+            memcpy(buffer, result.data(), result.size());
+            convert(L, info_index, info);
+            return result.size();
+          }
+          // TODO what is default?
+        } else {
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
+      return -ENOSYS;
+    }
+
     struct fuse_operations construct_operations() {
       struct fuse_operations operations;
       memset(&operations, 0, sizeof(operations));
@@ -170,6 +197,7 @@ namespace dromozoa {
       DROMOZOA_SET_OPERATION(getattr);
       DROMOZOA_SET_OPERATION(readdir);
       DROMOZOA_SET_OPERATION(open);
+      DROMOZOA_SET_OPERATION(read);
       DROMOZOA_SET_OPERATION(getxattr);
 
       return operations;
