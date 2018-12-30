@@ -36,9 +36,10 @@ namespace dromozoa {
     bool check(luaX_reference<>* self, lua_State* L, const char* name) {
       if (self->get_field(L) == LUA_TNIL || luaX_get_field(L, -1, name) == LUA_TNIL) {
         return false;
+      } else {
+        lua_pushvalue(L, -2);
+        return true;
       }
-      lua_pushvalue(L, -2);
-      return true;
     }
 
     void* init(struct fuse_conn_info* info) {
@@ -72,100 +73,92 @@ namespace dromozoa {
       luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      if (self->get_field(L) == LUA_TNIL) {
-        return -ENOSYS;
-      }
-      if (luaX_get_field(L, -1, "getattr") == LUA_TNIL) {
-        return -ENOSYS;
-      }
-      lua_pushvalue(L, -2);
-      luaX_push(L, path);
-      if (lua_pcall(L, 2, 1, 0) == 0) {
-        if (lua_istable(L, -1)) {
-          convert(L, -1, buf);
-          return 0;
-        } else if (luaX_is_integer(L, -1)) {
-          return lua_tointeger(L, -1);
+      if (check(self, L, "getattr")) {
+        luaX_push(L, path);
+        if (lua_pcall(L, 2, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          } else if (convert(L, -1, buf)) {
+            return 0;
+          }
+          DROMOZOA_UNEXPECTED("must return a table");
+        } else {
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
         }
-        return -ENOSYS;
-      } else {
-        return -ENOSYS;
       }
+      return -ENOSYS;
     }
 
     int getxattr(const char* path, const char* name, char* value, size_t size) {
       luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      if (self->get_field(L) == LUA_TNIL) {
-        return -ENOSYS;
-      }
-      if (luaX_get_field(L, -1, "getxattr") == LUA_TNIL) {
-        return -ENOSYS;
-      }
-      lua_pushvalue(L, -2);
-      luaX_push(L, path, name);
-      if (lua_pcall(L, 3, 1, 0) == 0) {
-        if (luaX_is_integer(L, -1)) {
-          return lua_tointeger(L, -1);
-        } else if (luaX_string_reference result = luaX_to_string(L, -1)) {
-          if (result.size() < size) {
-            memcpy(value, result.data(), result.size());
-            value[result.size()] = '\0';
-            return result.size();
-          } else {
-            return -ERANGE;
+      if (check(self, L, "getxattr")) {
+        luaX_push(L, path, name, size);
+        if (lua_pcall(L, 4, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          } else if (luaX_string_reference result = luaX_to_string(L, -1)) {
+            if (result.size() < size) {
+              // TODO how to deal '\0'?
+              memcpy(value, result.data(), result.size());
+              value[result.size()] = '\0';
+              return result.size();
+            } else {
+              return -ERANGE;
+            }
           }
+          // TODO what is default?
+          DROMOZOA_UNEXPECTED("must return a string");
         } else {
-          return -ENOTSUP;
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
         }
-      } else {
-        return -ENOSYS;
-      }
-    }
-
-    int readdir(const char* path, void* buffer, fuse_fill_dir_t function, off_t offset, struct fuse_file_info* file_info) {
-      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
-      lua_State* L = self->state();
-      luaX_top_saver save(L);
-      int file_info_index = convert(L, file_info);
-      if (self->get_field(L) == LUA_TNIL || luaX_get_field(L, -1, "readdir") == LUA_TNIL) {
-        return -ENOSYS;
-      }
-      lua_pushvalue(L, -2);
-      luaX_push(L, path);
-      scoped_handle scope(new_fill_dir(L, function, buffer));
-      luaX_push(L, offset);
-      lua_pushvalue(L, file_info_index);
-      if (lua_pcall(L, 5, 1, 0) == 0) {
-        if (luaX_is_integer(L, -1)) {
-          convert(L, file_info_index, file_info);
-          return lua_tointeger(L, -1);
-        }
-        // return 0;
       }
       return -ENOSYS;
     }
 
-    int open(const char* path, struct fuse_file_info* file_info) {
+    int readdir(const char* path, void* buffer, fuse_fill_dir_t function, off_t offset, struct fuse_file_info* info) {
       luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      if (self->get_field(L) == LUA_TNIL) {
-        return -ENOSYS;
-      }
-      if (luaX_get_field(L, -1, "open") == LUA_TNIL) {
-        return -ENOSYS;
-      }
-      lua_pushvalue(L, -2);
-      luaX_push(L, path);
-      convert(L, file_info);
-      if (lua_pcall(L, 3, 1, 0) == 0) {
-        if (luaX_is_integer(L, -1)) {
-          return lua_tointeger(L, -1);
+      int info_index = convert(L, info);
+      if (check(self, L, "readdir")) {
+        luaX_push(L, path);
+        scoped_handle scope(new_fill_dir(L, function, buffer));
+        luaX_push(L, offset);
+        lua_pushvalue(L, info_index);
+        if (lua_pcall(L, 5, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            convert(L, info_index, info);
+            return lua_tointeger(L, -1);
+          }
+          // TODO what is default?
+        } else {
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
         }
       }
-      return 0;
+      return -ENOSYS;
+    }
+
+    int open(const char* path, struct fuse_file_info* info) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      int info_index = convert(L, info);
+      if (check(self, L, "open")) {
+        luaX_push(L, path);
+        lua_pushvalue(L, info_index);
+        if (lua_pcall(L, 3, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            convert(L, info_index, info);
+            return lua_tointeger(L, -1);
+          }
+          // TODO what is default?
+        } else {
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
+      return -ENOSYS;
     }
 
     struct fuse_operations construct_operations() {
