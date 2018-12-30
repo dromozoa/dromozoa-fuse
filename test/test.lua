@@ -28,6 +28,7 @@ local gid = unix.getgid();
 local t = os.time()
 
 local ops = {}
+
 function ops:getattr(path)
   if path == "/" then
     return {

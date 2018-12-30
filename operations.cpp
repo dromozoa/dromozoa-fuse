@@ -33,12 +33,39 @@
 
 namespace dromozoa {
   namespace {
-    void* init(struct fuse_conn_info*) {
-      return fuse_get_context()->private_data;
+    bool check(luaX_reference<>* self, lua_State* L, const char* name) {
+      if (self->get_field(L) == LUA_TNIL || luaX_get_field(L, -1, name) == LUA_TNIL) {
+        return false;
+      }
+      lua_pushvalue(L, -2);
+      return true;
+    }
+
+    void* init(struct fuse_conn_info* info) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      int info_index = convert(L, info);
+      if (check(self, L, "init")) {
+        lua_pushvalue(L, info_index);
+        if (lua_pcall(L, 2, 0, 0) == 0) {
+          convert(L, info_index, info);
+        } else {
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
+      return self;
     }
 
     void destroy(void* userdata) {
       scoped_ptr<luaX_reference<> > self(static_cast<luaX_reference<>*>(userdata));
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      if (check(self.get(), L, "destroy")) {
+        if (lua_pcall(L, 1, 0, 0) != 0) {
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
     }
 
     int getattr(const char* path, struct stat* buf) {
