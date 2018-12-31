@@ -19,8 +19,7 @@
 
 #include <errno.h>
 #include <string.h>
-
-#include <iostream>
+#include <algorithm>
 
 #define DROMOZOA_SET_OPERATION(name) \
   operations.name = name \
@@ -52,6 +51,31 @@ namespace dromozoa {
             return 0;
           }
           DROMOZOA_UNEXPECTED("must return a table");
+        } else {
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
+      return -ENOSYS;
+    }
+
+    // http://linuxjm.osdn.jp/html/LDP_man-pages/man2/readlink.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L97
+    int readlink(const char* path, char* buffer, size_t size) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      if (check(self, L, "readlink")) {
+        luaX_push(L, path, size);
+        if (lua_pcall(L, 3, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          } else if (luaX_string_reference result = luaX_to_string(L, -1)) {
+            memset(buffer, 0, size);
+            memcpy(buffer, result.data(), std::min(size - 1, result.size()));
+            return 0;
+          } else {
+            return -ENOENT;
+          }
         } else {
           DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
         }
@@ -200,6 +224,7 @@ namespace dromozoa {
       memset(&operations, 0, sizeof(operations));
 
       DROMOZOA_SET_OPERATION(getattr);
+      DROMOZOA_SET_OPERATION(readlink);
       DROMOZOA_SET_OPERATION(open);
       DROMOZOA_SET_OPERATION(read);
       DROMOZOA_SET_OPERATION(getxattr);

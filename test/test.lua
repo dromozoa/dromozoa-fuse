@@ -55,10 +55,31 @@ function ops:getattr(path)
       st_size = #data;
       st_blocks = 0;
     }
+  elseif path == "/link.txt" then
+    return {
+      st_mode = unix.bor(unix.S_IFLNK, tonumber("0777", 8));
+      st_nlink = 1;
+      st_uid = uid;
+      st_gid = gid;
+      st_atime = t;
+      st_mtime = t;
+      st_ctime = t;
+      st_size = 8;
+      st_blocks = 0;
+    }
   else
     return -unix.ENOENT
   end
 end
+
+function ops:readlink(path)
+  if path == "/link.txt" then
+    return "test.txt"
+  else
+    return -unix.ENOENT
+  end
+end
+
 function ops:getxattr(path, name)
   print("getattr", path, name)
   return -unix.ENOTSUP
@@ -71,6 +92,8 @@ function ops:readdir(path, fill, offset, fi)
   local r = fill("..", nil, 0)
   print("readdir", r)
   local r = fill("test.txt", nil, 0)
+  print("readdir", r)
+  local r = fill("link.txt", nil, 0)
   print("readdir", r)
   return 0
 end
