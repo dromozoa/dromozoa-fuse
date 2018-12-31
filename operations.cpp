@@ -38,7 +38,7 @@ namespace dromozoa {
 
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/stat.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L89
-    int getattr(const char* path, struct stat* buf) {
+    int getattr(const char* path, struct stat* buffer) {
       luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
@@ -47,7 +47,7 @@ namespace dromozoa {
         if (lua_pcall(L, 2, 1, 0) == 0) {
           if (luaX_is_integer(L, -1)) {
             return lua_tointeger(L, -1);
-          } else if (convert(L, -1, buf)) {
+          } else if (convert(L, -1, buffer)) {
             return 0;
           }
           DROMOZOA_UNEXPECTED("must return a table");
@@ -75,6 +75,26 @@ namespace dromozoa {
             return 0;
           }
           DROMOZOA_UNEXPECTED("must return a string");
+        } else {
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
+      return -ENOSYS;
+    }
+
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/mkdir.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L118
+    int mkdir(const char* path, mode_t mode) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      if (check(self, L, "mkdir")) {
+        luaX_push(L, path, mode);
+        if (lua_pcall(L, 3, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          }
+          DROMOZOA_UNEXPECTED("must return an integer");
         } else {
           DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
         }
@@ -221,6 +241,7 @@ namespace dromozoa {
 
       DROMOZOA_SET_OPERATION(getattr);
       DROMOZOA_SET_OPERATION(readlink);
+      DROMOZOA_SET_OPERATION(mkdir);
       DROMOZOA_SET_OPERATION(open);
       DROMOZOA_SET_OPERATION(read);
       DROMOZOA_SET_OPERATION(getxattr);

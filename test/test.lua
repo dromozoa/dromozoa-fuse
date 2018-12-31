@@ -30,6 +30,7 @@ local t = os.time()
 local data = "hello world!\n"
 
 local ops = {}
+local dirs = {}
 
 function ops:getattr(path)
   if path == "/" then
@@ -67,6 +68,8 @@ function ops:getattr(path)
       st_size = 8;
       st_blocks = 0;
     }
+  elseif dirs[path] then
+    return dirs[path]
   else
     return -unix.ENOENT
   end
@@ -78,6 +81,22 @@ function ops:readlink(path)
   else
     return -unix.ENOENT
   end
+end
+
+function ops:mkdir(path, mode)
+  print("mkdir", path, ("%04o"):format(mode))
+  local t = os.time()
+  dirs[path] = {
+    st_mode = unix.bor(unix.S_IFDIR, mode);
+    st_nlink = 2;
+    st_uid = uid;
+    st_gid = gid;
+    st_atime = t;
+    st_mtime = t;
+    st_ctime = t;
+    st_blocks = 0;
+  }
+  return 0
 end
 
 function ops:getxattr(path, name)
