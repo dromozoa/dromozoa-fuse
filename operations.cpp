@@ -45,9 +45,7 @@ namespace dromozoa {
       if (check(self, L, "getattr")) {
         luaX_push(L, path);
         if (lua_pcall(L, 2, 1, 0) == 0) {
-          if (lua_isnil(L, -1)) {
-            return -ENOENT;
-          } else if (luaX_is_integer(L, -1)) {
+          if (luaX_is_integer(L, -1)) {
             return lua_tointeger(L, -1);
           } else if (convert(L, -1, buf)) {
             return 0;
@@ -69,9 +67,7 @@ namespace dromozoa {
       if (check(self, L, "readlink")) {
         luaX_push(L, path, size);
         if (lua_pcall(L, 3, 1, 0) == 0) {
-          if (lua_isnil(L, -1)) {
-            return -ENOENT;
-          } else if (luaX_is_integer(L, -1)) {
+          if (luaX_is_integer(L, -1)) {
             return lua_tointeger(L, -1);
           } else if (luaX_string_reference result = luaX_to_string(L, -1)) {
             memset(buffer, 0, size);
@@ -97,9 +93,7 @@ namespace dromozoa {
         luaX_push(L, path);
         lua_pushvalue(L, info_index);
         if (lua_pcall(L, 3, 1, 0) == 0) {
-          if (lua_isnil(L, -1)) {
-            return -ENOENT;
-          } else if (luaX_is_integer(L, -1)) {
+          if (luaX_is_integer(L, -1)) {
             convert(L, info_index, info);
             return lua_tointeger(L, -1);
           }
@@ -127,12 +121,11 @@ namespace dromozoa {
             return lua_tointeger(L, -1);
           } else if (luaX_string_reference result = luaX_to_string(L, -1)) {
             memset(buffer, 0, size);
-            // TODO check string size
-            memcpy(buffer, result.data(), result.size());
+            memcpy(buffer, result.data(), std::min(size, result.size()));
             convert(L, info_index, info);
             return result.size();
           }
-          // TODO what is default?
+          DROMOZOA_UNEXPECTED("must return a string");
         } else {
           DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
         }
@@ -152,16 +145,14 @@ namespace dromozoa {
           if (luaX_is_integer(L, -1)) {
             return lua_tointeger(L, -1);
           } else if (luaX_string_reference result = luaX_to_string(L, -1)) {
-            if (result.size() < size) {
-              // TODO how to deal '\0'?
+            if (result.size() <= size) {
+              memset(value, 0, size);
               memcpy(value, result.data(), result.size());
-              value[result.size()] = '\0';
               return result.size();
             } else {
               return -ERANGE;
             }
           }
-          // TODO what is default?
           DROMOZOA_UNEXPECTED("must return a string");
         } else {
           DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
@@ -187,7 +178,7 @@ namespace dromozoa {
             convert(L, info_index, info);
             return lua_tointeger(L, -1);
           }
-          // TODO what is default?
+          DROMOZOA_UNEXPECTED("must return an integer");
         } else {
           DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
         }

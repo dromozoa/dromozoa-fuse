@@ -75,6 +75,8 @@ end
 function ops:readlink(path)
   if path == "/link.txt" then
     return "test.txt"
+  else
+    return -unix.ENOENT
   end
 end
 
