@@ -40,7 +40,9 @@ namespace dromozoa {
     scoped_handle& operator=(const scoped_handle&);
   };
 
+  int convert(lua_State* L, const fuse_conn_info* that);
   int convert(lua_State* L, const fuse_file_info* that);
+  bool convert(lua_State* L, int index, fuse_conn_info* that);
   bool convert(lua_State* L, int index, fuse_file_info* that);
   bool convert(lua_State* L, int index, struct stat* that);
 

@@ -26,6 +26,21 @@
   /**/
 
 namespace dromozoa {
+  int convert(lua_State* L, const fuse_conn_info* that) {
+    lua_newtable(L);
+    int index = lua_gettop(L);
+    DROMOZOA_SET_FIELD(proto_major);
+    DROMOZOA_SET_FIELD(proto_minor);
+    DROMOZOA_SET_FIELD(async_read);
+    DROMOZOA_SET_FIELD(max_write);
+    DROMOZOA_SET_FIELD(max_readahead);
+    DROMOZOA_SET_FIELD(capable);
+    DROMOZOA_SET_FIELD(want);
+    DROMOZOA_SET_FIELD(max_background);
+    DROMOZOA_SET_FIELD(congestion_threshold);
+    return index;
+  }
+
   int convert(lua_State* L, const fuse_file_info* that) {
     lua_newtable(L);
     int index = lua_gettop(L);
@@ -39,6 +54,23 @@ namespace dromozoa {
     DROMOZOA_SET_FIELD(fh);
     DROMOZOA_SET_FIELD(lock_owner);
     return index;
+  }
+
+  bool convert(lua_State* L, int index, fuse_conn_info* that) {
+    if (lua_istable(L, index)) {
+      DROMOZOA_OPT_FIELD(proto_major); // read-only
+      DROMOZOA_OPT_FIELD(proto_minor); // read-only
+      DROMOZOA_OPT_FIELD(async_read);  // read-write
+      DROMOZOA_OPT_FIELD(max_write);
+      DROMOZOA_OPT_FIELD(max_readahead);
+      DROMOZOA_OPT_FIELD(capable);
+      DROMOZOA_OPT_FIELD(want);
+      DROMOZOA_OPT_FIELD(max_background);
+      DROMOZOA_OPT_FIELD(congestion_threshold);
+      return true;
+    } else {
+      return false;
+    }
   }
 
   bool convert(lua_State* L, int index, fuse_file_info* that) {

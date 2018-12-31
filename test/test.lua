@@ -27,7 +27,10 @@ local uid = unix.getuid();
 local gid = unix.getgid();
 local t = os.time()
 
+local data = "hello world!\n"
+
 local ops = {}
+
 function ops:getattr(path)
   if path == "/" then
     return {
@@ -49,7 +52,7 @@ function ops:getattr(path)
       st_atime = t;
       st_mtime = t;
       st_ctime = t;
-      st_size = 8;
+      st_size = #data;
       st_blocks = 0;
     }
   else
@@ -70,6 +73,30 @@ function ops:readdir(path, fill, offset, fi)
   local r = fill("test.txt", nil, 0)
   print("readdir", r)
   return 0
+end
+
+function ops:open(path, info)
+  if path == "/test.txt" then
+    return 0
+  else
+    return -unix.ENOENT
+  end
+end
+
+function ops:read(path, size, offset, info)
+  if path == "/" then
+    return -unix.EISDIR
+  elseif path == "/test.txt" then
+    print(size, offset, info)
+    if offset < #data then
+      local i = offset + 1
+      local j = math.min(#data - offset, size)
+      return data:sub(i, j)
+    end
+    return 0
+  else
+    return -unix.ENOENT
+  end
 end
 
 local result = fuse.main(args, ops)
