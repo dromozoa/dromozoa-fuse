@@ -45,7 +45,9 @@ namespace dromozoa {
       if (check(self, L, "getattr")) {
         luaX_push(L, path);
         if (lua_pcall(L, 2, 1, 0) == 0) {
-          if (luaX_is_integer(L, -1)) {
+          if (lua_isnil(L, -1)) {
+            return -ENOENT;
+          } else if (luaX_is_integer(L, -1)) {
             return lua_tointeger(L, -1);
           } else if (convert(L, -1, buf)) {
             return 0;
@@ -67,15 +69,16 @@ namespace dromozoa {
       if (check(self, L, "readlink")) {
         luaX_push(L, path, size);
         if (lua_pcall(L, 3, 1, 0) == 0) {
-          if (luaX_is_integer(L, -1)) {
+          if (lua_isnil(L, -1)) {
+            return -ENOENT;
+          } else if (luaX_is_integer(L, -1)) {
             return lua_tointeger(L, -1);
           } else if (luaX_string_reference result = luaX_to_string(L, -1)) {
             memset(buffer, 0, size);
             memcpy(buffer, result.data(), std::min(size - 1, result.size()));
             return 0;
-          } else {
-            return -ENOENT;
           }
+          DROMOZOA_UNEXPECTED("must return a string");
         } else {
           DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
         }
