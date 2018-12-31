@@ -37,8 +37,8 @@ namespace dromozoa {
       }
     }
 
-    // http://eli/~moyu/dromozoa-fuse/docs/fuse-2.9.2/fuse.h.html#L89
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/stat.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L89
     int getattr(const char* path, struct stat* buf) {
       luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
@@ -60,7 +60,7 @@ namespace dromozoa {
     }
 
     // http://linuxjm.osdn.jp/html/LDP_man-pages/man2/open.2.html
-    // http://eli/~moyu/dromozoa-fuse/docs/fuse-2.9.2/fuse.h.html#156
+    // http://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L156
     int open(const char* path, struct fuse_file_info* info) {
       luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
@@ -83,7 +83,7 @@ namespace dromozoa {
     }
 
     // http://linuxjm.osdn.jp/html/LDP_man-pages/man2/read.2.html
-    // http://eli/~moyu/dromozoa-fuse/docs/fuse-2.9.2/fuse.h.html#L175
+    // http://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L175
     int read(const char* path, char* buffer, size_t size, off_t offset, struct fuse_file_info* info) {
       luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
@@ -112,7 +112,7 @@ namespace dromozoa {
     }
 
     // http://linuxjm.osdn.jp/html/LDP_man-pages/man2/getxattr.2.html
-    // http://eli/~moyu/dromozoa-fuse/docs/fuse-2.9.2/fuse.h.html#L262
+    // http://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L262
     int getxattr(const char* path, const char* name, char* value, size_t size) {
       luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
@@ -142,7 +142,7 @@ namespace dromozoa {
     }
 
     // http://linuxjm.osdn.jp/html/LDP_man-pages/man2/readdir.2.html
-    // http://eli/~moyu/dromozoa-fuse/docs/fuse-2.9.2/fuse.h.html#L283
+    // http://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L283
     int readdir(const char* path, void* buffer, fuse_fill_dir_t function, off_t offset, struct fuse_file_info* info) {
       luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
@@ -166,7 +166,7 @@ namespace dromozoa {
       return -ENOSYS;
     }
 
-    // http://eli/~moyu/dromozoa-fuse/docs/fuse-2.9.2/fuse.h.html#L322
+    // http://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L322
     void* init(struct fuse_conn_info* info) {
       luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
@@ -183,7 +183,7 @@ namespace dromozoa {
       return self;
     }
 
-    // http://eli/~moyu/dromozoa-fuse/docs/fuse-2.9.2/fuse.h.html#L334
+    // http://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L334
     void destroy(void* userdata) {
       scoped_ptr<luaX_reference<> > self(static_cast<luaX_reference<>*>(userdata));
       lua_State* L = self->state();
