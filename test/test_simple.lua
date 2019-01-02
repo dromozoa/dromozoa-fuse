@@ -83,12 +83,25 @@ local function set(path, data)
   for i = 1, n - 1 do
     this = this[items[i]]
   end
-  this[items[n]] = { data }
+  if data then
+    this[items[n]] = { data }
+  else
+    this[items[n]] = nil
+  end
+end
+
+local function unlink(path)
+  local data = get(path)[1]
+  data.st_nlink = data.st_nlink - 1
+  data.st_atime = now
+  data.st_mtime = now
 end
 
 local function link(source, result)
   local data = get(source)[1]
   data.st_nlink = data.st_nlink + 1
+  data.st_atime = now
+  data.st_mtime = now
   set(result, data)
 end
 
@@ -105,14 +118,15 @@ function ops:getattr(path)
   return this[1]
 end
 
-function ops:readdir(path, fill, offset, info)
+function ops:readlink(path)
   local this = get(path)
-  for name, value in pairs(this) do
-    if type(name) == "string" then
-      fill(name)
-    end
+  if not this then
+    return -unix.ENOENT
   end
-  return 0
+  if unix.band(this[1].st_mode, unix.S_IFLNK) == 0 then
+    return -unix.EINVAL
+  end
+  return this[1][1]
 end
 
 function ops:mkdir(path)
@@ -128,10 +142,10 @@ function ops:mkdir(path)
     return -unix.ENOTDIR
   end
   if get(path) then
-    return -unix.ENOENT
+    return -unix.EEXIST
   end
 
-  local now = os.time()
+  now = os.time()
   set(path, {
     st_mode = unix.bor(unix.S_IFDIR, tonumber("0755", 8));
     st_nlink = 1;
@@ -146,6 +160,70 @@ function ops:mkdir(path)
   link(parent_path, path .. "/..")
   link(path, path .. "/.")
 
+  return 0
+end
+
+function ops:rmdir(path)
+  local this = get(path)
+  if unix.band(this[1].st_mode, unix.S_IFDIR) == 0 then
+    return -unix.ENOTDIR
+  end
+  for name in pairs(this) do
+    if type(name) == "string" and name ~= "." and name ~= ".." then
+      return -unix.ENOTEMPTY
+    end
+  end
+
+  now = os.time()
+  unlink(path .. "/..")
+  set(path)
+  return 0
+end
+
+function ops:symlink(source, result)
+  print("!", source, result)
+
+  local parent_path, name = parse(result)
+  if not parent_path then
+    return -unix.EEXIST
+  end
+  local parent = get(parent_path)
+  if not parent then
+    return -unix.ENOENT
+  end
+  if unix.band(parent[1].st_mode, unix.S_IFDIR) == 0 then
+    return -unix.ENOTDIR
+  end
+  if get(result) then
+    return -unix.EEXIST
+  end
+
+  now = os.time()
+  set(result, {
+    st_mode = unix.bor(unix.S_IFLNK, tonumber("0777", 8));
+    st_nlink = 1;
+    st_uid = uid;
+    st_gid = gid;
+    st_atime = now;
+    st_mtime = now;
+    st_ctime = now;
+    st_blocks = 0;
+    st_size = #source;
+    source;
+  })
+
+  -- TODO update directory entry?
+
+  return 0
+end
+
+function ops:readdir(path, fill, offset, info)
+  local this = get(path)
+  for name, value in pairs(this) do
+    if type(name) == "string" then
+      fill(name)
+    end
+  end
   return 0
 end
 
