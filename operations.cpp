@@ -202,6 +202,46 @@ namespace dromozoa {
       return -ENOSYS;
     }
 
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/chmod.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L142
+    int chmod(const char* path, mode_t mode) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      if (check(self, L, "chmod")) {
+        luaX_push(L, path, mode);
+        if (lua_pcall(L, 3, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          }
+          DROMOZOA_UNEXPECTED("must return an integer");
+        } else {
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
+      return -ENOSYS;
+    }
+
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/chown.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L144
+    int chown(const char* path, uid_t uid, gid_t gid) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      if (check(self, L, "chown")) {
+        luaX_push(L, path, uid, gid);
+        if (lua_pcall(L, 4, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          }
+          DROMOZOA_UNEXPECTED("must return an integer");
+        } else {
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
+      return -ENOSYS;
+    }
+
     // http://linuxjm.osdn.jp/html/LDP_man-pages/man2/open.2.html
     // http://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L156
     int open(const char* path, struct fuse_file_info* info) {
@@ -347,6 +387,8 @@ namespace dromozoa {
       DROMOZOA_SET_OPERATION(symlink);
       DROMOZOA_SET_OPERATION(rename);
       DROMOZOA_SET_OPERATION(link);
+      DROMOZOA_SET_OPERATION(chmod);
+      DROMOZOA_SET_OPERATION(chown);
       DROMOZOA_SET_OPERATION(open);
       DROMOZOA_SET_OPERATION(read);
       DROMOZOA_SET_OPERATION(getxattr);
