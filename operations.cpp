@@ -242,6 +242,26 @@ namespace dromozoa {
       return -ENOSYS;
     }
 
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/truncate.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L147
+    int truncate(const char* path, off_t size) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      if (check(self, L, "truncate")) {
+        luaX_push(L, path, size);
+        if (lua_pcall(L, 3, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          }
+          DROMOZOA_UNEXPECTED("must return an integer");
+        } else {
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
+      return -ENOSYS;
+    }
+
     // http://linuxjm.osdn.jp/html/LDP_man-pages/man2/open.2.html
     // http://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L156
     int open(const char* path, struct fuse_file_info* info) {
@@ -286,6 +306,29 @@ namespace dromozoa {
             return result.size();
           }
           DROMOZOA_UNEXPECTED("must return a string");
+        } else {
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
+      return -ENOSYS;
+    }
+
+    // http://linuxjm.osdn.jp/html/LDP_man-pages/man2/write.2.html
+    // http://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L189
+    int write(const char* path, const char* buffer, size_t size, off_t offset, struct fuse_file_info* info) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      int info_index = convert(L, info);
+      if (check(self, L, "write")) {
+        luaX_push(L, path, luaX_string_reference(buffer, size), offset);
+        lua_pushvalue(L, info_index);
+        if (lua_pcall(L, 5, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            convert(L, info_index, info);
+            return lua_tointeger(L, -1);
+          }
+          DROMOZOA_UNEXPECTED("must return an integer");
         } else {
           DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
         }
@@ -389,8 +432,10 @@ namespace dromozoa {
       DROMOZOA_SET_OPERATION(link);
       DROMOZOA_SET_OPERATION(chmod);
       DROMOZOA_SET_OPERATION(chown);
+      DROMOZOA_SET_OPERATION(truncate);
       DROMOZOA_SET_OPERATION(open);
       DROMOZOA_SET_OPERATION(read);
+      DROMOZOA_SET_OPERATION(write);
       DROMOZOA_SET_OPERATION(getxattr);
       DROMOZOA_SET_OPERATION(readdir);
       DROMOZOA_SET_OPERATION(init);
