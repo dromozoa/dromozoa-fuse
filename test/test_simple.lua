@@ -217,6 +217,12 @@ function ops:symlink(source, result)
   return 0
 end
 
+function ops:read(path, size, offset, info)
+end
+
+function ops:write(path, data, offset, info)
+end
+
 function ops:readdir(path, fill, offset, info)
   local this = get(path)
   for name, value in pairs(this) do
