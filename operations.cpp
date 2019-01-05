@@ -445,7 +445,28 @@ namespace dromozoa {
       return -ENOSYS;
     }
 
-    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/readdir.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L271
+    int opendir(const char* path, struct fuse_file_info* info) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      int info_index = convert(L, info);
+      if (check(self, L, "opendir")) {
+        luaX_push(L, path);
+        lua_pushvalue(L, info_index);
+        if (lua_pcall(L, 3, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            convert(L, info_index, info);
+            return lua_tointeger(L, -1);
+          }
+          DROMOZOA_UNEXPECTED("must return an integer");
+        } else {
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
+      return -ENOSYS;
+    }
+
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L283
     int readdir(const char* path, void* buffer, fuse_fill_dir_t function, off_t offset, struct fuse_file_info* info) {
       luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
@@ -458,6 +479,50 @@ namespace dromozoa {
         luaX_push(L, offset);
         lua_pushvalue(L, info_index);
         if (lua_pcall(L, 5, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            convert(L, info_index, info);
+            return lua_tointeger(L, -1);
+          }
+          DROMOZOA_UNEXPECTED("must return an integer");
+        } else {
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
+      return -ENOSYS;
+    }
+
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L309
+    int releasedir(const char* path, struct fuse_file_info* info) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      int info_index = convert(L, info);
+      if (check(self, L, "releasedir")) {
+        luaX_push(L, path);
+        lua_pushvalue(L, info_index);
+        if (lua_pcall(L, 3, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            convert(L, info_index, info);
+            return lua_tointeger(L, -1);
+          }
+          DROMOZOA_UNEXPECTED("must return an integer");
+        } else {
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
+      return -ENOSYS;
+    }
+
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L313
+    int fsyncdir(const char* path, int datasync, struct fuse_file_info* info) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      int info_index = convert(L, info);
+      if (check(self, L, "fsyncdir")) {
+        luaX_push(L, path, datasync);
+        lua_pushvalue(L, info_index);
+        if (lua_pcall(L, 4, 1, 0) == 0) {
           if (luaX_is_integer(L, -1)) {
             convert(L, info_index, info);
             return lua_tointeger(L, -1);
@@ -497,6 +562,26 @@ namespace dromozoa {
           DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
         }
       }
+    }
+
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/access.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L344
+    int access(const char* path, int mode) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      if (check(self, L, "access")) {
+        luaX_push(L, path, mode);
+        if (lua_pcall(L, 3, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          }
+          DROMOZOA_UNEXPECTED("must return an integer");
+        } else {
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
+      return -ENOSYS;
     }
 
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L356
@@ -592,9 +677,13 @@ namespace dromozoa {
       DROMOZOA_SET_OPERATION(flush);
       DROMOZOA_SET_OPERATION(release);
       DROMOZOA_SET_OPERATION(fsync);
+      DROMOZOA_SET_OPERATION(opendir);
       DROMOZOA_SET_OPERATION(readdir);
+      DROMOZOA_SET_OPERATION(releasedir);
+      DROMOZOA_SET_OPERATION(fsyncdir);
       DROMOZOA_SET_OPERATION(init);
       DROMOZOA_SET_OPERATION(destroy);
+      DROMOZOA_SET_OPERATION(access);
       DROMOZOA_SET_OPERATION(create);
       DROMOZOA_SET_OPERATION(ftruncate);
       DROMOZOA_SET_OPERATION(fgetattr);
