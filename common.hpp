@@ -40,11 +40,13 @@ namespace dromozoa {
     scoped_handle& operator=(const scoped_handle&);
   };
 
-  int convert(lua_State* L, const fuse_conn_info* that);
-  int convert(lua_State* L, const fuse_file_info* that);
-  bool convert(lua_State* L, int index, fuse_conn_info* that);
-  bool convert(lua_State* L, int index, fuse_file_info* that);
+  int convert(lua_State* L, const struct fuse_context* that);
+  int convert(lua_State* L, const struct fuse_conn_info* that);
+  int convert(lua_State* L, const struct fuse_file_info* that);
+  bool convert(lua_State* L, int index, struct fuse_conn_info* that);
+  bool convert(lua_State* L, int index, struct fuse_file_info* that);
   bool convert(lua_State* L, int index, struct stat* that);
+  bool convert(lua_State* L, int index, struct statvfs* that);
 
   handle* new_fill_dir(lua_State* L, fuse_fill_dir_t function, void* buffer);
 }
