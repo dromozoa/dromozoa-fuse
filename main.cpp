@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Tomoyuki Fujimori <moyu@dromozoa.com>
+// Copyright (C) 2018,2019 Tomoyuki Fujimori <moyu@dromozoa.com>
 //
 // This file is part of dromozoa-fuse.
 //
@@ -53,10 +53,15 @@ namespace dromozoa {
       int result = fuse_main(argv.size() - 1, argv.data(), &operations, self.release());
       luaX_push(L, result);
     }
+
+    void impl_get_context(lua_State* L) {
+      convert(L, fuse_get_context());
+    }
   }
 
   void initialize_main(lua_State* L) {
     luaX_set_field(L, -1, "main", impl_main);
+    luaX_set_field(L, -1, "get_context", impl_get_context);
 
     luaX_set_field(L, -1, "FUSE_CAP_ASYNC_READ", FUSE_CAP_ASYNC_READ);
     luaX_set_field(L, -1, "FUSE_CAP_POSIX_LOCKS", FUSE_CAP_POSIX_LOCKS);
@@ -69,5 +74,10 @@ namespace dromozoa {
     luaX_set_field(L, -1, "FUSE_CAP_SPLICE_READ", FUSE_CAP_SPLICE_READ);
     luaX_set_field(L, -1, "FUSE_CAP_FLOCK_LOCKS", FUSE_CAP_FLOCK_LOCKS);
     luaX_set_field(L, -1, "FUSE_CAP_IOCTL_DIR", FUSE_CAP_IOCTL_DIR);
+
+    luaX_set_field(L, -1, "F_OK", F_OK);
+    luaX_set_field(L, -1, "R_OK", R_OK);
+    luaX_set_field(L, -1, "W_OK", W_OK);
+    luaX_set_field(L, -1, "X_OK", X_OK);
   }
 }
