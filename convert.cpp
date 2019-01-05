@@ -26,7 +26,17 @@
   /**/
 
 namespace dromozoa {
-  int convert(lua_State* L, const fuse_conn_info* that) {
+  int convert(lua_State* L, const struct fuse_context* that) {
+    lua_newtable(L);
+    int index = lua_gettop(L);
+    DROMOZOA_SET_FIELD(uid);
+    DROMOZOA_SET_FIELD(gid);
+    DROMOZOA_SET_FIELD(pid);
+    DROMOZOA_SET_FIELD(umask);
+    return index;
+  }
+
+  int convert(lua_State* L, const struct fuse_conn_info* that) {
     lua_newtable(L);
     int index = lua_gettop(L);
     DROMOZOA_SET_FIELD(proto_major);
@@ -41,7 +51,7 @@ namespace dromozoa {
     return index;
   }
 
-  int convert(lua_State* L, const fuse_file_info* that) {
+  int convert(lua_State* L, const struct fuse_file_info* that) {
     lua_newtable(L);
     int index = lua_gettop(L);
     DROMOZOA_SET_FIELD(flags);
@@ -56,7 +66,7 @@ namespace dromozoa {
     return index;
   }
 
-  bool convert(lua_State* L, int index, fuse_conn_info* that) {
+  bool convert(lua_State* L, int index, struct fuse_conn_info* that) {
     if (lua_istable(L, index)) {
       DROMOZOA_OPT_FIELD(proto_major); // read-only
       DROMOZOA_OPT_FIELD(proto_minor); // read-only
@@ -73,7 +83,7 @@ namespace dromozoa {
     }
   }
 
-  bool convert(lua_State* L, int index, fuse_file_info* that) {
+  bool convert(lua_State* L, int index, struct fuse_file_info* that) {
     if (lua_istable(L, index)) {
       DROMOZOA_OPT_FIELD(flags);
       DROMOZOA_OPT_FIELD(writepage);

@@ -53,10 +53,15 @@ namespace dromozoa {
       int result = fuse_main(argv.size() - 1, argv.data(), &operations, self.release());
       luaX_push(L, result);
     }
+
+    void impl_get_context(lua_State* L) {
+      convert(L, fuse_get_context());
+    }
   }
 
   void initialize_main(lua_State* L) {
     luaX_set_field(L, -1, "main", impl_main);
+    luaX_set_field(L, -1, "get_context", impl_get_context);
 
     luaX_set_field(L, -1, "FUSE_CAP_ASYNC_READ", FUSE_CAP_ASYNC_READ);
     luaX_set_field(L, -1, "FUSE_CAP_POSIX_LOCKS", FUSE_CAP_POSIX_LOCKS);
