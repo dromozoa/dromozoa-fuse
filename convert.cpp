@@ -110,4 +110,23 @@ namespace dromozoa {
       return false;
     }
   }
+
+  bool convert(lua_State* L, int index, struct statvfs* that) {
+    if (lua_istable(L, index)) {
+      memset(that, 0, sizeof(*that));
+      DROMOZOA_OPT_FIELD(f_bsize);
+      DROMOZOA_OPT_FIELD(f_frsize);
+      DROMOZOA_OPT_FIELD(f_blocks);
+      DROMOZOA_OPT_FIELD(f_bfree);
+      DROMOZOA_OPT_FIELD(f_bavail);
+      DROMOZOA_OPT_FIELD(f_files);
+      DROMOZOA_OPT_FIELD(f_ffree);
+      DROMOZOA_OPT_FIELD(f_fsid);
+      DROMOZOA_OPT_FIELD(f_flag);
+      DROMOZOA_OPT_FIELD(f_namemax);
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
