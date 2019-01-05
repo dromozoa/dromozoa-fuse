@@ -445,34 +445,6 @@ namespace dromozoa {
       return -ENOSYS;
     }
 
-    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/getxattr.2.html
-    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L262
-    int getxattr(const char* path, const char* name, char* value, size_t size) {
-      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
-      lua_State* L = self->state();
-      luaX_top_saver save(L);
-      if (check(self, L, "getxattr")) {
-        luaX_push(L, path, name, size);
-        if (lua_pcall(L, 4, 1, 0) == 0) {
-          if (luaX_is_integer(L, -1)) {
-            return lua_tointeger(L, -1);
-          } else if (luaX_string_reference result = luaX_to_string(L, -1)) {
-            if (result.size() <= size) {
-              memset(value, 0, size);
-              memcpy(value, result.data(), result.size());
-              return result.size();
-            } else {
-              return -ERANGE;
-            }
-          }
-          DROMOZOA_UNEXPECTED("must return a string");
-        } else {
-          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
-        }
-      }
-      return -ENOSYS;
-    }
-
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/readdir.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L283
     int readdir(const char* path, void* buffer, fuse_fill_dir_t function, off_t offset, struct fuse_file_info* info) {
@@ -620,7 +592,6 @@ namespace dromozoa {
       DROMOZOA_SET_OPERATION(flush);
       DROMOZOA_SET_OPERATION(release);
       DROMOZOA_SET_OPERATION(fsync);
-      DROMOZOA_SET_OPERATION(getxattr);
       DROMOZOA_SET_OPERATION(readdir);
       DROMOZOA_SET_OPERATION(init);
       DROMOZOA_SET_OPERATION(destroy);
