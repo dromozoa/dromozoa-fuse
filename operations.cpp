@@ -418,8 +418,6 @@ namespace dromozoa {
       }
     }
 
-    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/mknod.2.html
-    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/open.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L356
     int create(const char* path, mode_t mode, struct fuse_file_info* info) {
       luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
@@ -435,6 +433,54 @@ namespace dromozoa {
             return lua_tointeger(L, -1);
           }
           DROMOZOA_UNEXPECTED("must return an integer");
+        } else {
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
+      return -ENOSYS;
+    }
+
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/ftruncate.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L370
+    int ftruncate(const char* path, off_t size, struct fuse_file_info* info) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      int info_index = convert(L, info);
+      if (check(self, L, "ftruncate")) {
+        luaX_push(L, path, size);
+        lua_pushvalue(L, info_index);
+        if (lua_pcall(L, 4, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            convert(L, info_index, info);
+            return lua_tointeger(L, -1);
+          }
+          DROMOZOA_UNEXPECTED("must return an integer");
+        } else {
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
+      return -ENOSYS;
+    }
+
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/fstat.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L384
+    int fgetattr(const char* path, struct stat* buffer, struct fuse_file_info* info) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      int info_index = convert(L, info);
+      if (check(self, L, "fgetattr")) {
+        luaX_push(L, path);
+        lua_pushvalue(L, info_index);
+        if (lua_pcall(L, 3, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          } else if (convert(L, -1, buffer)) {
+            convert(L, info_index, info);
+            return 0;
+          }
+          DROMOZOA_UNEXPECTED("must return a table");
         } else {
           DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
         }
@@ -465,6 +511,8 @@ namespace dromozoa {
       DROMOZOA_SET_OPERATION(init);
       DROMOZOA_SET_OPERATION(destroy);
       DROMOZOA_SET_OPERATION(create);
+      DROMOZOA_SET_OPERATION(ftruncate);
+      DROMOZOA_SET_OPERATION(fgetattr);
 
       return operations;
     }
