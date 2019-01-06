@@ -18,6 +18,7 @@
 #ifndef DROMOZOA_COMMON_HPP
 #define DROMOZOA_COMMON_HPP
 
+#define _FILE_OFFSET_BITS 64
 #define FUSE_USE_VERSION 28
 #include <fuse.h>
 
