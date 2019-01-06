@@ -105,6 +105,7 @@ namespace dromozoa {
     }
   }
 
+  // TODO nsec support
   // https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/sys_stat.h.html
   // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/stat.2.html
   // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L89
@@ -129,7 +130,6 @@ namespace dromozoa {
     }
   }
 
-  // TODO nsec support
   // https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/sys_statvfs.h.html
   // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/statvfs.2.html
   // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L200
