@@ -18,6 +18,7 @@
 #ifndef DROMOZOA_COMMON_HPP
 #define DROMOZOA_COMMON_HPP
 
+#define _FILE_OFFSET_BITS 64
 #define FUSE_USE_VERSION 28
 #include <fuse.h>
 
@@ -32,7 +33,7 @@ namespace dromozoa {
 
   class scoped_handle {
   public:
-    explicit scoped_handle(handle* ptr);
+    explicit scoped_handle(handle*);
     ~scoped_handle();
   private:
     handle* ptr_;
@@ -40,15 +41,15 @@ namespace dromozoa {
     scoped_handle& operator=(const scoped_handle&);
   };
 
-  int convert(lua_State* L, const struct fuse_context* that);
-  int convert(lua_State* L, const struct fuse_conn_info* that);
-  int convert(lua_State* L, const struct fuse_file_info* that);
-  bool convert(lua_State* L, int index, struct fuse_conn_info* that);
-  bool convert(lua_State* L, int index, struct fuse_file_info* that);
-  bool convert(lua_State* L, int index, struct stat* that);
-  bool convert(lua_State* L, int index, struct statvfs* that);
+  handle* new_fill_dir(lua_State*, fuse_fill_dir_t, void*);
 
-  handle* new_fill_dir(lua_State* L, fuse_fill_dir_t function, void* buffer);
+  int convert(lua_State*, const struct fuse_context*);
+  int convert(lua_State*, const struct fuse_conn_info*);
+  int convert(lua_State*, const struct fuse_file_info*);
+  bool convert(lua_State*, int, struct fuse_conn_info*);
+  bool convert(lua_State*, int, struct fuse_file_info*);
+  bool convert(lua_State*, int, struct stat*);
+  bool convert(lua_State*, int, struct statvfs*);
 }
 
 #endif

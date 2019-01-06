@@ -1,4 +1,4 @@
-# Copyright (C) 2018 Tomoyuki Fujimori <moyu@dromozoa.com>
+# Copyright (C) 2019 Tomoyuki Fujimori <moyu@dromozoa.com>
 #
 # This file is part of dromozoa-fuse.
 #
@@ -15,34 +15,31 @@
 # You should have received a copy of the GNU General Public License
 # along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
-CPPFLAGS += -Ibind -I$(LUA_INCDIR)
-CXXFLAGS += -Wall -W $(CFLAGS) `pkg-config fuse --cflags`
-LDFLAGS += -L$(LUA_LIBDIR) $(LIBFLAG)
-LDLIBS += -lfuse -ldl
+ACLOCAL_AMFLAGS = -I m4
 
-OBJS = \
-	convert.o \
-	fill_dir.o \
-	handle.o \
-	main.o \
-	module.o \
-	operations.o
-TARGET = fuse.so
+EXTRA_DIST = \
+	.gitignore \
+	README.md \
+	bind \
+	build_docs.lua \
+	docs \
+	dromozoa-fuse-*.rockspec \
+	m4/update \
+	test \
+	$(TESTS)
+TESTS = test.sh
 
-all: $(TARGET)
+luaexec_LTLIBRARIES = fuse.la
 
-clean:
-	rm -f *.o $(TARGET)
+noinst_HEADERS = common.hpp
 
-check:
-	./test.sh
-
-fuse.so: $(OBJS)
-	$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $@
-
-.cpp.o:
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $<
-
-install:
-	mkdir -p $(LIBDIR)/dromozoa
-	cp $(TARGET) $(LIBDIR)/dromozoa
+fuse_la_CPPFLAGS = -I$(top_srcdir)/bind
+fuse_la_LDFLAGS = -module -avoid-version -shared
+fuse_la_LIBADD = -lfuse
+fuse_la_SOURCES = \
+	convert.cpp \
+	fill_dir.cpp \
+	handle.cpp \
+	main.cpp \
+	module.cpp \
+	operations.cpp
