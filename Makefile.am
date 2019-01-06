@@ -21,6 +21,7 @@ EXTRA_DIST = \
 	.gitignore \
 	README.md \
 	bind \
+	build_docs.lua \
 	docs \
 	dromozoa-fuse-*.rockspec \
 	m4/update \
