@@ -204,9 +204,9 @@ function ops:symlink(source, result)
     st_nlink = 1;
     st_uid = uid;
     st_gid = gid;
-    st_atime = now;
-    st_mtime = now;
-    st_ctime = now;
+    st_atime = { tv_sec = now, tv_nsec = 123456789 };
+    st_mtime = { tv_sec = now, tv_nsec = 424242424 };
+    st_ctime = { tv_sec = now, tv_nsec = 696969696 };
     st_blocks = 0;
     st_size = #source;
     source;
@@ -221,6 +221,10 @@ function ops:read(path, size, offset, info)
 end
 
 function ops:write(path, data, offset, info)
+end
+
+function ops:opendir()
+  return 0
 end
 
 function ops:readdir(path, fill, offset, info)

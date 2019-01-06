@@ -160,27 +160,27 @@ namespace dromozoa {
       DROMOZOA_OPT_FIELD(st_size);
 
 #if defined(HAVE_STRUCT_STAT_ST_ATIM)
-      that->st_atim = convert_timespec(L, index, "atim", "atimespec", "atime");
+      that->st_atim = convert_timespec(L, index, "st_atim", "st_atimespec", "st_atime");
 #elif defined(HAVE_STRUCT_STAT_ST_ATIMESPEC)
-      that->st_atimespec = convert_timespec(L, index, "atim", "atimespec", "atime");
+      that->st_atimespec = convert_timespec(L, index, "st_atim", "st_atimespec", "st_atime");
 #else
-      that->st_atime = convert_timespec(L, index, "atim", "atimespec", "atime").tv_sec;
+      that->st_atime = convert_timespec(L, index, "st_atim", "st_atimespec", "st_atime").tv_sec;
 #endif
 
 #if defined(HAVE_STRUCT_STAT_ST_MTIM)
-      that->st_mtim = convert_timespec(L, index, "mtim", "mtimespec", "mtime");
+      that->st_mtim = convert_timespec(L, index, "st_mtim", "st_mtimespec", "st_mtime");
 #elif defined(HAVE_STRUCT_STAT_ST_MTIMESPEC)
-      that->st_mtimespec = convert_timespec(L, index, "mtim", "mtimespec", "mtime");
+      that->st_mtimespec = convert_timespec(L, index, "st_mtim", "st_mtimespec", "st_mtime");
 #else
-      that->st_mtime = convert_timespec(L, index, "mtim", "mtimespec", "mtime").tv_sec;
+      that->st_mtime = convert_timespec(L, index, "st_mtim", "st_mtimespec", "st_mtime").tv_sec;
 #endif
 
 #if defined(HAVE_STRUCT_STAT_ST_CTIM)
-      that->st_ctim = convert_timespec(L, index, "ctim", "ctimespec", "ctime");
+      that->st_ctim = convert_timespec(L, index, "st_ctim", "st_ctimespec", "st_ctime");
 #elif defined(HAVE_STRUCT_STAT_ST_CTIMESPEC)
-      that->st_ctimespec = convert_timespec(L, index, "ctim", "ctimespec", "ctime");
+      that->st_ctimespec = convert_timespec(L, index, "st_ctim", "st_ctimespec", "st_ctime");
 #else
-      that->st_ctime = convert_timespec(L, index, "ctim", "ctimespec", "ctime").tv_sec;
+      that->st_ctime = convert_timespec(L, index, "st_ctim", "st_ctimespec", "st_ctime").tv_sec;
 #endif
 
       DROMOZOA_OPT_FIELD(st_blksize); // ignored
