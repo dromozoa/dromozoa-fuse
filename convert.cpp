@@ -26,6 +26,7 @@
   /**/
 
 namespace dromozoa {
+  // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L593
   int convert(lua_State* L, const struct fuse_context* that) {
     lua_newtable(L);
     int index = lua_gettop(L);
@@ -36,6 +37,7 @@ namespace dromozoa {
     return index;
   }
 
+  // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse_common.h.html#L133
   int convert(lua_State* L, const struct fuse_conn_info* that) {
     lua_newtable(L);
     int index = lua_gettop(L);
@@ -51,6 +53,7 @@ namespace dromozoa {
     return index;
   }
 
+  // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse_common.h.html#L40
   int convert(lua_State* L, const struct fuse_file_info* that) {
     lua_newtable(L);
     int index = lua_gettop(L);
@@ -66,6 +69,7 @@ namespace dromozoa {
     return index;
   }
 
+  // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse_common.h.html#L133
   bool convert(lua_State* L, int index, struct fuse_conn_info* that) {
     if (lua_istable(L, index)) {
       DROMOZOA_OPT_FIELD(proto_major); // read-only
@@ -83,6 +87,7 @@ namespace dromozoa {
     }
   }
 
+  // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse_common.h.html#L40
   bool convert(lua_State* L, int index, struct fuse_file_info* that) {
     if (lua_istable(L, index)) {
       DROMOZOA_OPT_FIELD(flags);
@@ -100,11 +105,15 @@ namespace dromozoa {
     }
   }
 
+  // TODO nsec support
+  // https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/sys_stat.h.html
+  // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/stat.2.html
+  // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L89
   bool convert(lua_State* L, int index, struct stat* that) {
     if (lua_istable(L, index)) {
       memset(that, 0, sizeof(*that));
-      DROMOZOA_OPT_FIELD(st_dev);
-      DROMOZOA_OPT_FIELD(st_ino);
+      DROMOZOA_OPT_FIELD(st_dev); // ignored
+      DROMOZOA_OPT_FIELD(st_ino); // ignored except if the 'use_ino' mount opetion is given
       DROMOZOA_OPT_FIELD(st_mode);
       DROMOZOA_OPT_FIELD(st_nlink);
       DROMOZOA_OPT_FIELD(st_uid);
@@ -113,7 +122,7 @@ namespace dromozoa {
       DROMOZOA_OPT_FIELD(st_atime);
       DROMOZOA_OPT_FIELD(st_mtime);
       DROMOZOA_OPT_FIELD(st_ctime);
-      DROMOZOA_OPT_FIELD(st_blksize);
+      DROMOZOA_OPT_FIELD(st_blksize); // ignored
       DROMOZOA_OPT_FIELD(st_blocks);
       return true;
     } else {
@@ -121,18 +130,22 @@ namespace dromozoa {
     }
   }
 
+  // https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/sys_statvfs.h.html
+  // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/statvfs.2.html
+  // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L200
   bool convert(lua_State* L, int index, struct statvfs* that) {
     if (lua_istable(L, index)) {
       memset(that, 0, sizeof(*that));
       DROMOZOA_OPT_FIELD(f_bsize);
-      DROMOZOA_OPT_FIELD(f_frsize);
+      DROMOZOA_OPT_FIELD(f_frsize); // ignored
       DROMOZOA_OPT_FIELD(f_blocks);
       DROMOZOA_OPT_FIELD(f_bfree);
       DROMOZOA_OPT_FIELD(f_bavail);
       DROMOZOA_OPT_FIELD(f_files);
       DROMOZOA_OPT_FIELD(f_ffree);
-      DROMOZOA_OPT_FIELD(f_fsid);
-      DROMOZOA_OPT_FIELD(f_flag);
+      DROMOZOA_OPT_FIELD(f_favail); // ignored
+      DROMOZOA_OPT_FIELD(f_fsid);   // ignored
+      DROMOZOA_OPT_FIELD(f_flag);   // ignored
       DROMOZOA_OPT_FIELD(f_namemax);
       return true;
     } else {

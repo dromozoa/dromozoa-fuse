@@ -356,7 +356,7 @@ namespace dromozoa {
       return -ENOSYS;
     }
 
-    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/statfs.2.html
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/statvfs.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L200
     int statfs(const char* path, struct statvfs* buffer) {
       luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
