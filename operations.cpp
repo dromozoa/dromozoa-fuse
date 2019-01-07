@@ -565,7 +565,7 @@ namespace dromozoa {
     }
 
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/access.2.html
-    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L344
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L343
     int access(const char* path, int mode) {
       luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
