@@ -74,10 +74,5 @@ namespace dromozoa {
     luaX_set_field(L, -1, "FUSE_CAP_SPLICE_READ", FUSE_CAP_SPLICE_READ);
     luaX_set_field(L, -1, "FUSE_CAP_FLOCK_LOCKS", FUSE_CAP_FLOCK_LOCKS);
     luaX_set_field(L, -1, "FUSE_CAP_IOCTL_DIR", FUSE_CAP_IOCTL_DIR);
-
-    luaX_set_field(L, -1, "F_OK", F_OK);
-    luaX_set_field(L, -1, "R_OK", R_OK);
-    luaX_set_field(L, -1, "W_OK", W_OK);
-    luaX_set_field(L, -1, "X_OK", X_OK);
   }
 }
