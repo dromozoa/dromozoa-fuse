@@ -111,6 +111,18 @@ namespace dromozoa {
     return index;
   }
 
+  // http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/time.h.html
+  // http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/sys_stat.h.html
+  // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/utimensat.2.html
+  // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L150
+  int convert(lua_State* L, const struct timespec* that) {
+    lua_newtable(L);
+    int index = lua_gettop(L);
+    DROMOZOA_SET_FIELD(tv_sec);
+    DROMOZOA_SET_FIELD(tv_nsec);
+    return index;
+  }
+
   // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse_common.h.html#L133
   bool convert(lua_State* L, int index, struct fuse_conn_info* that) {
     if (lua_istable(L, index)) {

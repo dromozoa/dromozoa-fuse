@@ -654,6 +654,32 @@ namespace dromozoa {
       return -ENOSYS;
     }
 
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/utimensat.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L433
+    int utimens(const char* path, const struct timespec times[2]) {
+      luaX_reference<>* self = static_cast<luaX_reference<>*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      if (check(self, L, "utimens")) {
+        luaX_push(L, path);
+        if (times) {
+          convert(L, &times[0]);
+          convert(L, &times[1]);
+        } else {
+          luaX_push(L, luaX_nil, luaX_nil);
+        }
+        if (lua_pcall(L, 4, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          }
+          DROMOZOA_UNEXPECTED("must return an integer");
+        } else {
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
+      return -ENOSYS;
+    }
+
     struct fuse_operations construct_operations() {
       struct fuse_operations operations;
       memset(&operations, 0, sizeof(operations));
@@ -687,6 +713,7 @@ namespace dromozoa {
       DROMOZOA_SET_OPERATION(create);
       DROMOZOA_SET_OPERATION(ftruncate);
       DROMOZOA_SET_OPERATION(fgetattr);
+      DROMOZOA_SET_OPERATION(utimens);
 
       return operations;
     }
