@@ -21,6 +21,8 @@
 
 #include "common.hpp"
 
+#include <math.h>
+
 #define DROMOZOA_SET_FIELD(name) \
   luaX_set_field(L, index, #name, that->name) \
   /**/
