@@ -679,6 +679,9 @@ namespace dromozoa {
   operations::operations(lua_State* L, int index)
     : ops_(),
       ref_(L, index) {
+    ops_.init = init;
+    ops_.destroy = destroy;
+
     DROMOZOA_SET_OPERATION(getattr);
     DROMOZOA_SET_OPERATION(readlink);
     DROMOZOA_SET_OPERATION(mknod);
@@ -702,8 +705,6 @@ namespace dromozoa {
     DROMOZOA_SET_OPERATION(readdir);
     DROMOZOA_SET_OPERATION(releasedir);
     DROMOZOA_SET_OPERATION(fsyncdir);
-    DROMOZOA_SET_OPERATION(init);
-    DROMOZOA_SET_OPERATION(destroy);
     DROMOZOA_SET_OPERATION(access);
     DROMOZOA_SET_OPERATION(create);
     DROMOZOA_SET_OPERATION(ftruncate);
