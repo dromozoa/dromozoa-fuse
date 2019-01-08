@@ -1,3 +1,5 @@
+#! /bin/sh -e
+
 # Copyright (C) 2019 Tomoyuki Fujimori <moyu@dromozoa.com>
 #
 # This file is part of dromozoa-fuse.
@@ -15,31 +17,14 @@
 # You should have received a copy of the GNU General Public License
 # along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
-ACLOCAL_AMFLAGS = -I m4
+case X$1 in
+  X) echo "usage: $0 mountpoint"; exit 1;;
+  *) mountpoint=$1;;
+esac
 
-EXTRA_DIST = \
-	.gitignore \
-	README.md \
-	bind \
-	build_docs.lua \
-	docs \
-	dromozoa-fuse-*.rockspec \
-	m4/update \
-	test \
-	umount.sh \
-	$(TESTS)
-TESTS = test.sh
-
-luaexec_LTLIBRARIES = fuse.la
-
-noinst_HEADERS = common.hpp
-
-fuse_la_CPPFLAGS = -I$(top_srcdir)/bind
-fuse_la_LDFLAGS = -module -avoid-version -shared
-fuse_la_SOURCES = \
-	convert.cpp \
-	fill_dir.cpp \
-	handle.cpp \
-	main.cpp \
-	module.cpp \
-	operations.cpp
+if fusermount -V >/dev/null 2>&1
+then
+  fusermount -u "$mountpoint"
+else
+  umount "$mountpoint"
+fi
