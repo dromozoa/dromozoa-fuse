@@ -48,7 +48,8 @@ namespace dromozoa {
       argv.push_back(0);
 
       scoped_ptr<operations> self(new operations(L, 2));
-      int result = fuse_main(argv.size() - 1, argv.data(), self->get(), self.release());
+      fuse_operations* ops = self->get();
+      int result = fuse_main(argv.size() - 1, argv.data(), ops, self.release());
       luaX_push(L, result);
     }
 
