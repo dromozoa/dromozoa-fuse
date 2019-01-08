@@ -18,13 +18,36 @@
 #ifndef DROMOZOA_COMMON_HPP
 #define DROMOZOA_COMMON_HPP
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #define _FILE_OFFSET_BITS 64
 #define FUSE_USE_VERSION 28
+
+#ifdef HAVE_OSXFUSE_FUSE_H
+#include <osxfuse/fuse.h>
+#else
 #include <fuse.h>
+#endif
 
 #include <dromozoa/bind.hpp>
 
 namespace dromozoa {
+  class operations {
+  public:
+    operations(lua_State*, int);
+    fuse_operations* get();
+    lua_State* state() const;
+    bool prepare(lua_State*, const char*) const;
+  private:
+    fuse_operations ops_;
+    luaX_reference<> ref_;
+    operations(const operations&);
+    operations& operator=(const operations&);
+    bool check(lua_State*, const char*) const;
+  };
+
   class handle {
   public:
     virtual ~handle() = 0;

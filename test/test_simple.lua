@@ -218,9 +218,24 @@ function ops:symlink(source, result)
 end
 
 function ops:read(path, size, offset, info)
+  return -unix.ENOTSUP
 end
 
 function ops:write(path, data, offset, info)
+  return -unix.ENOTSUP
+end
+
+function ops:statfs(path)
+  return {
+    f_bsize = 512;
+    f_frsize = 512;
+    f_blocks = 1024;
+    f_bfree = 1024;
+    f_bavail = 1024;
+    f_files = 1024;
+    f_ffree = 1000;
+    f_namemax = 256;
+  }
 end
 
 function ops:opendir()
@@ -234,6 +249,10 @@ function ops:readdir(path, fill, offset, info)
       fill(name)
     end
   end
+  return 0
+end
+
+function ops:closedir()
   return 0
 end
 

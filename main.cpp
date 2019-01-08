@@ -21,8 +21,6 @@
 #include <string>
 
 namespace dromozoa {
-  extern struct fuse_operations operations;
-
   namespace {
     void impl_main(lua_State* L) {
       luaL_checktype(L, 1, LUA_TTABLE);
@@ -49,8 +47,9 @@ namespace dromozoa {
       }
       argv.push_back(0);
 
-      scoped_ptr<luaX_reference<> > self(new luaX_reference<>(L, 2));
-      int result = fuse_main(argv.size() - 1, argv.data(), &operations, self.release());
+      scoped_ptr<operations> self(new operations(L, 2));
+      fuse_operations* ops = self->get();
+      int result = fuse_main(argv.size() - 1, argv.data(), ops, self.release());
       luaX_push(L, result);
     }
 
