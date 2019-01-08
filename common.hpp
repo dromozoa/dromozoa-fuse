@@ -34,6 +34,20 @@
 #include <dromozoa/bind.hpp>
 
 namespace dromozoa {
+  class operations {
+  public:
+    operations(lua_State*, int);
+    fuse_operations* get();
+    lua_State* state() const;
+    bool prepare(lua_State*, const char*) const;
+  private:
+    fuse_operations ops_;
+    luaX_reference<> ref_;
+    operations(const operations&);
+    operations& operator=(const operations&);
+    bool check(lua_State*, const char*) const;
+  };
+
   class handle {
   public:
     virtual ~handle() = 0;
