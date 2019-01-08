@@ -19,11 +19,14 @@
 
 root=`pwd`
 
-PATH=$root/test:$PATH
+PATH=$root/tool:$PATH
 export PATH
 
-mkdir -p "$root/mount"
-lua test/runner.lua test/test.lua test/test.sh "$root/mount"
+mountpoint=$root/mount
+
+mkdir -p "$mountpoint"
+lua test/runner.lua test/test.lua test/test.sh "$mountpoint"
+rmdir "$mountpoint"
 
 # for i in test/test*.lua
 # do

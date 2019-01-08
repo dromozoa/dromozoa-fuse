@@ -26,6 +26,7 @@ EXTRA_DIST = \
 	dromozoa-fuse-*.rockspec \
 	m4/update \
 	test \
+	tool \
 	$(TESTS)
 TESTS = test.sh
 
