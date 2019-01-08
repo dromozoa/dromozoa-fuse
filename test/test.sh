@@ -1,6 +1,6 @@
 #! /bin/sh -e
 
-# Copyright (C) 2018 Tomoyuki Fujimori <moyu@dromozoa.com>
+# Copyright (C) 2019 Tomoyuki Fujimori <moyu@dromozoa.com>
 #
 # This file is part of dromozoa-fuse.
 #
@@ -17,18 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
-root=`pwd`
+root=$1
 
-PATH=$root/test:$PATH
-export PATH
+sleep 1
 
-mkdir -p "$root/mount"
-lua test/runner.lua test/test.lua test/test.sh "$root/mount"
-
-# for i in test/test*.lua
-# do
-#   case X$# in
-#     X0) lua "$i";;
-#     *) "$@" "$i";;
-#   esac
-# done
+ls -al "$root"
+umount.sh "$root"

@@ -19,13 +19,13 @@ local unix = require "dromozoa.unix"
 
 local PATH = os.getenv "PATH"
 
-local fuse_script, test_script = ...
+local fuse_script, test_script, mount_point = ...
 
 local process1 = unix.process()
 local process2 = unix.process()
 
-process1:forkexec(PATH, { fuse_script, "-d", "-s" })
-process2:forkexec(PATH, { test_script })
+process1:forkexec(PATH, { fuse_script, mount_point, "-d", "-s" })
+process2:forkexec(PATH, { test_script, mount_point })
 
 local pid, reason, status = assert(unix.wait())
 assert(pid == process1[1] or process2[1])

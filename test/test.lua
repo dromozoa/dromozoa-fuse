@@ -1,3 +1,5 @@
+#! /usr/bin/env lua
+
 -- Copyright (C) 2018,2019 Tomoyuki Fujimori <moyu@dromozoa.com>
 --
 -- This file is part of dromozoa-fuse.
@@ -45,4 +47,4 @@ function operations:readdir(path, fill)
   end
 end
 
-fuse.main({ arg[0], ... }, operations)
+local result = fuse.main({ arg[0], ... }, operations)

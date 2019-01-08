@@ -18,13 +18,13 @@
 # along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
 case X$1 in
-  X) echo "usage: $0 mountpoint"; exit 1;;
-  *) mountpoint=$1;;
+  X) echo "usage: $0 root"; exit 1;;
+  *) root=$1;;
 esac
 
 if fusermount -V >/dev/null 2>&1
 then
-  fusermount -u "$mountpoint"
+  fusermount -u "$root"
 else
-  umount "$mountpoint"
+  umount "$root"
 fi
