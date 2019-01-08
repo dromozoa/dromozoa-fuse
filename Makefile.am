@@ -35,7 +35,6 @@ noinst_HEADERS = common.hpp
 
 fuse_la_CPPFLAGS = -I$(top_srcdir)/bind
 fuse_la_LDFLAGS = -module -avoid-version -shared
-fuse_la_LIBADD = -lfuse
 fuse_la_SOURCES = \
 	convert.cpp \
 	fill_dir.cpp \

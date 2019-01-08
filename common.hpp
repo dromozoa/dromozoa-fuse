@@ -18,9 +18,18 @@
 #ifndef DROMOZOA_COMMON_HPP
 #define DROMOZOA_COMMON_HPP
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #define _FILE_OFFSET_BITS 64
 #define FUSE_USE_VERSION 28
+
+#ifdef HAVE_OSXFUSE_FUSE_H
+#include <osxfuse/fuse.h>
+#else
 #include <fuse.h>
+#endif
 
 #include <dromozoa/bind.hpp>
 
