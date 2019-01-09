@@ -45,6 +45,8 @@ else
   test_result=NG
 fi
 
+sleep 1
+
 dromozoa_umount "$root"
 
 if wait "$pid"
