@@ -1,4 +1,6 @@
--- Copyright (C) 2018 Tomoyuki Fujimori <moyu@dromozoa.com>
+#! /usr/bin/env lua
+
+-- Copyright (C) 2018,2019 Tomoyuki Fujimori <moyu@dromozoa.com>
 --
 -- This file is part of dromozoa-fuse.
 --
@@ -18,128 +20,31 @@
 local fuse = require "dromozoa.fuse"
 local unix = require "dromozoa.unix"
 
-local args = {}
-for i = 0, #arg do
-  args[#args + 1] = arg[i]
-end
+local operations = {}
 
-local uid = unix.getuid();
-local gid = unix.getgid();
-local t = os.time()
-
-local data = "hello world!\n"
-
-local ops = {}
-local dirs = {}
-
-function ops:getattr(path)
+function operations:getattr(path)
   if path == "/" then
     return {
       st_mode = unix.bor(unix.S_IFDIR, tonumber("0755", 8));
       st_nlink = 2;
-      st_uid = uid;
-      st_gid = gid;
-      st_atime = t;
-      st_mtime = t;
-      st_ctime = t;
-      st_blocks = 0;
     }
-  elseif path == "/test.txt" then
-    return {
-      st_mode = unix.bor(unix.S_IFREG, tonumber("0644", 8));
-      st_nlink = 1;
-      st_uid = uid;
-      st_gid = gid;
-      st_atime = t;
-      st_mtime = t;
-      st_ctime = t;
-      st_size = #data;
-      st_blocks = 0;
-    }
-  elseif path == "/link.txt" then
-    return {
-      st_mode = unix.bor(unix.S_IFLNK, tonumber("0777", 8));
-      st_nlink = 1;
-      st_uid = uid;
-      st_gid = gid;
-      st_atime = t;
-      st_mtime = t;
-      st_ctime = t;
-      st_size = 8;
-      st_blocks = 0;
-    }
-  elseif dirs[path] then
-    return dirs[path]
   else
     return -unix.ENOENT
   end
 end
 
-function ops:readlink(path)
-  if path == "/link.txt" then
-    return "test.txt"
-  else
-    return -unix.ENOENT
-  end
+function operations:statfs(path)
+  return {}
 end
 
-function ops:mkdir(path, mode)
-  print("mkdir", path, ("%04o"):format(mode))
-  local t = os.time()
-  dirs[path] = {
-    st_mode = unix.bor(unix.S_IFDIR, mode);
-    st_nlink = 2;
-    st_uid = uid;
-    st_gid = gid;
-    st_atime = t;
-    st_mtime = t;
-    st_ctime = t;
-    st_blocks = 0;
-  }
-  return 0
-end
-
-function ops:getxattr(path, name)
-  print("getattr", path, name)
-  return -unix.ENOTSUP
-end
-
-function ops:readdir(path, fill, offset, fi)
-  print("readdir", path, fill, offset, fi)
-  local r = fill(".", nil, 0)
-  print("readdir", r)
-  local r = fill("..", nil, 0)
-  print("readdir", r)
-  local r = fill("test.txt", nil, 0)
-  print("readdir", r)
-  local r = fill("link.txt", nil, 0)
-  print("readdir", r)
-  return 0
-end
-
-function ops:open(path, info)
-  if path == "/test.txt" then
-    return 0
-  else
-    return -unix.ENOENT
-  end
-end
-
-function ops:read(path, size, offset, info)
+function operations:readdir(path, fill)
   if path == "/" then
-    return -unix.EISDIR
-  elseif path == "/test.txt" then
-    print(size, offset, info)
-    if offset < #data then
-      local i = offset + 1
-      local j = math.min(#data - offset, size)
-      return data:sub(i, j)
-    end
+    fill "."
+    fill ".."
     return 0
   else
     return -unix.ENOENT
   end
 end
 
-local result = fuse.main(args, ops)
-print(result)
+local result = fuse.main({ arg[0], ... }, operations)

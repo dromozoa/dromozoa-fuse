@@ -41,15 +41,15 @@ namespace dromozoa {
       std::vector<std::string>::const_iterator i = args.begin();
       std::vector<std::string>::const_iterator end = args.end();
 
-      std::vector<char*> argv;
+      std::vector<const char*> argv;
       for (; i != end; ++i) {
-        argv.push_back(const_cast<char*>(i->c_str()));
+        argv.push_back(i->c_str());
       }
       argv.push_back(0);
 
       scoped_ptr<operations> self(new operations(L, 2));
       fuse_operations* ops = self->get();
-      int result = fuse_main(argv.size() - 1, argv.data(), ops, self.release());
+      int result = fuse_main(argv.size() - 1, const_cast<char**>(argv.data()), ops, self.release());
       luaX_push(L, result);
     }
 
