@@ -18,8 +18,4 @@
 # along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
 root=$1
-
-sleep 1
-
 ls -al "$root"
-umount.sh "$root"

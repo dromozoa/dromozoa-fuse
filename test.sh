@@ -17,22 +17,34 @@
 # You should have received a copy of the GNU General Public License
 # along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
-root=`pwd`
+dromozoa_umount() {
+  if fusermount -V >/dev/null 2>&1
+  then
+    fusermount -u "$1"
+  else
+    umount "$1"
+  fi
+}
 
-PATH=$root/tool:$PATH
-export PATH
+root=`pwd`/mount
 
-mountpoint=$root/mount
+mkdir -p "$root"
 
-mkdir -p "$mountpoint"
 case X$# in
-  X0) lua test/test.lua "$mountpoint" -d -s &;;
-  *) "$@" test/test.lua "$mountpoint" -d -s &;;
+  X0) lua test/test.lua "$root" -d -s &;;
+  *) "$@" test/test.lua "$root" -d -s &;;
 esac
 pid=$!
 
-./test/test.sh "$mountpoint"
+sleep 1
+if ./test/test.sh "$root"
+then
+  :
+else
+  :
+fi
 
+dromozoa_umount "$root"
 wait "$pid"
 
-rmdir "$mountpoint"
+rmdir "$root"
