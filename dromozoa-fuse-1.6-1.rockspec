@@ -1,8 +1,8 @@
 rockspec_format = "3.0"
 package = "dromozoa-fuse"
-version = "1.5-1"
+version = "1.6-1"
 source = {
-  url = "https://github.com/dromozoa/dromozoa-fuse/releases/download/v1.5/dromozoa-fuse-1.5.tar.gz";
+  url = "https://github.com/dromozoa/dromozoa-fuse/releases/download/v1.6/dromozoa-fuse-1.6.tar.gz";
 }
 description = {
   summary = "Lua bindings for libfuse";
