@@ -29,4 +29,7 @@
 /missing
 /stamp-h1
 /test-driver
+/test-suite.log
+/test.sh.log
+/test.sh.trs
 Makefile
