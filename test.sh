@@ -56,4 +56,9 @@ fi
 
 rmdir "$root"
 
-echo "$fuse_result/$test_result"
+result=$fuse_result/$test_result
+echo "$result"
+case X$result in
+  XOK/OK) ;;
+  *) exit 1;;
+esac
