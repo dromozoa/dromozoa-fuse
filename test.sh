@@ -37,14 +37,23 @@ esac
 pid=$!
 
 sleep 1
+
 if ./test/test.sh "$root"
 then
-  :
+  test_result=OK
 else
-  :
+  test_result=NG
 fi
 
 dromozoa_umount "$root"
-wait "$pid"
+
+if wait "$pid"
+then
+  fuse_result=OK
+else
+  fuse_result=NG
+fi
 
 rmdir "$root"
+
+echo "$fuse_result/$test_result"
