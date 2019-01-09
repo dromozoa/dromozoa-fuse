@@ -25,13 +25,14 @@ export PATH
 mountpoint=$root/mount
 
 mkdir -p "$mountpoint"
-lua test/runner.lua test/test.lua test/test.sh "$mountpoint"
-rmdir "$mountpoint"
+case X$# in
+  X0) lua test/test.lua "$mountpoint" -d -s &;;
+  *) "$@" test/test.lua "$mountpoint" -d -s &;;
+esac
+pid=$!
 
-# for i in test/test*.lua
-# do
-#   case X$# in
-#     X0) lua "$i";;
-#     *) "$@" "$i";;
-#   esac
-# done
+./test/test.sh "$mountpoint"
+
+wait "$pid"
+
+rmdir "$mountpoint"
