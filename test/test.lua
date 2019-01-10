@@ -27,7 +27,7 @@ function operations:getattr(path)
       st_nlink = 2;
     }
   else
-    return -unix.ENOENT
+    error(-unix.ENOENT)
   end
 end
 
