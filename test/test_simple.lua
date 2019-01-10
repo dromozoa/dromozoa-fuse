@@ -22,6 +22,39 @@ local uid = unix.getuid();
 local gid = unix.getgid();
 local now = assert(unix.clock_gettime(unix.CLOCK_REALTIME))
 
+--[[
+
+dir_node = {
+  name = "foo";
+  nodes = {
+  };
+}
+
+]]
+
+local root = {
+  attr = {
+  };
+}
+
+local function parse(path)
+  local names = {}
+  for name in path:gmatch "/([^/]+)" do
+    names[#names + 1] = name
+  end
+  return names
+end
+
+local function get(names)
+  if #names == 0 then
+    return root
+  end
+end
+
+os.exit()
+
+--[====[
+
 local root = {
   {
     st_mode = unix.bor(unix.S_IFDIR, tonumber("0755", 8));
@@ -250,6 +283,8 @@ end
 function ops:closedir()
   return 0
 end
+
+]====]
 
 local result = fuse.main({ arg[0], ... }, operations)
 assert(result == 0)

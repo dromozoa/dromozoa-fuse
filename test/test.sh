@@ -18,4 +18,8 @@
 mount_point=$1
 
 ls -al "$mount_point"
+if test -f "$mount_point/no_such_file"
+then
+  exit 1
+fi
 df "$mount_point"
