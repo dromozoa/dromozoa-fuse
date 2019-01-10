@@ -26,6 +26,31 @@ dromozoa_umount() {
   fi
 }
 
+dromozoa_message() {
+  case X$1 in
+    XOK)
+      shift
+      if test -t 1
+      then
+        printf '\33[96m'
+        printf "$@"
+        printf '\33[0m\n'
+      else
+        printf "$@"
+      fi;;
+    XNG)
+      shift
+      if test -t 1
+      then
+        printf '\33[91m'
+        printf "$@"
+        printf '\33[0m\n'
+      else
+        printf "$@"
+      fi;;
+  esac
+}
+
 fuse_script=$1
 shift
 test_script=$1
@@ -43,7 +68,7 @@ pid=$!
 
 sleep 1
 
-if "$test_script" "$mount_point"
+if sh -e "$test_script" "$mount_point"
 then
   test_result=OK
 else
@@ -63,9 +88,10 @@ fi
 
 rmdir "$mount_point"
 
-result=$fuse_result/$test_result
-echo "$result"
-case X$result in
-  XOK/OK) ;;
+dromozoa_message "$fuse_result" '[%s] %s' "$fuse_result" "$fuse_script"
+dromozoa_message "$test_result" '[%s] %s' "$test_result" "$test_script"
+
+case X$fuse_result$test_result in
+  XOKOK) ;;
   *) exit 1;;
 esac
