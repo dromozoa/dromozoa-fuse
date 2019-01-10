@@ -1,5 +1,3 @@
-#! /bin/sh -e
-
 # Copyright (C) 2019 Tomoyuki Fujimori <moyu@dromozoa.com>
 #
 # This file is part of dromozoa-fuse.
@@ -17,5 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
-root=$1
-ls -al "$root"
+mount_point=$1
+
+ls -al "$mount_point"
+df "$mount_point"

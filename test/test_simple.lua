@@ -15,17 +15,12 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
-local fuse = require "dromozoa.fuse"
 local unix = require "dromozoa.unix"
-
-local args = {}
-for i = 0, #arg do
-  args[#args + 1] = arg[i]
-end
+local fuse = require "dromozoa.fuse"
 
 local uid = unix.getuid();
 local gid = unix.getgid();
-local now = os.time()
+local now = assert(unix.clock_gettime(unix.CLOCK_REALTIME))
 
 local root = {
   {
@@ -256,8 +251,5 @@ function ops:closedir()
   return 0
 end
 
-local args = {}
-for i = 0, #arg do
-  args[#args + 1] = arg[i]
-end
-fuse.main(args, ops)
+local result = fuse.main({ arg[0], ... }, operations)
+assert(result == 0)

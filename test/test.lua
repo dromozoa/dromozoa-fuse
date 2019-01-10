@@ -1,5 +1,3 @@
-#! /usr/bin/env lua
-
 -- Copyright (C) 2018,2019 Tomoyuki Fujimori <moyu@dromozoa.com>
 --
 -- This file is part of dromozoa-fuse.
@@ -17,8 +15,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
-local fuse = require "dromozoa.fuse"
 local unix = require "dromozoa.unix"
+local fuse = require "dromozoa.fuse"
 
 local operations = {}
 
@@ -48,3 +46,4 @@ function operations:readdir(path, fill)
 end
 
 local result = fuse.main({ arg[0], ... }, operations)
+assert(result == 0)

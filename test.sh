@@ -17,50 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
-dromozoa_umount() {
-  if fusermount -V >/dev/null 2>&1
-  then
-    fusermount -u "$1"
-  else
-    umount "$1"
-  fi
-}
+mount_point=`pwd`/mount
 
-root=`pwd`/mount
-
-mkdir -p "$root"
-
-case X$# in
-  X0) lua test/test.lua "$root" -d -s &;;
-  *) "$@" test/test.lua "$root" -d -s &;;
-esac
-pid=$!
-
-sleep 1
-
-if ./test/test.sh "$root"
-then
-  test_result=OK
-else
-  test_result=NG
-fi
-
-sleep 1
-
-dromozoa_umount "$root"
-
-if wait "$pid"
-then
-  fuse_result=OK
-else
-  fuse_result=NG
-fi
-
-rmdir "$root"
-
-result=$fuse_result/$test_result
-echo "$result"
-case X$result in
-  XOK/OK) ;;
-  *) exit 1;;
-esac
+./test/runner test/test.lua test/test.sh "$mount_point" "$@"
