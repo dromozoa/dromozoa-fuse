@@ -33,6 +33,18 @@ local function mode_dir(mode)
   return unix.bor(unix.S_IFDIR, tonumber(mode, 8))
 end
 
+local function update_atime(node)
+  node.attr.st_atime = current_time
+end
+
+local function update_mtime(node)
+  node.attr.st_mtime = current_time
+end
+
+local function update_ctime(node)
+  node.attr.st_ctime = current_time
+end
+
 local vfs = {}
 
 local root = {
@@ -109,6 +121,7 @@ local function link(oldpath, newpath)
   local this = get(oldpath)
   local attr = this.attr
   attr.st_nlink = attr.st_nlink + 1
+  attr.st_ctime = current_time;
   set(newpath, this)
 end
 
@@ -122,6 +135,7 @@ end
 
 function operations:mkdir(path)
   local parent_path, name = split(path)
+  local parent_node = get(parent_path)
   update_current_time()
   set(path, {
     attr = {
@@ -138,6 +152,7 @@ function operations:mkdir(path)
   })
   link(parent_path, path .. "/..")
   link(path, path .. "/.")
+  update_mtime(parent_node)
   return 0
 end
 
