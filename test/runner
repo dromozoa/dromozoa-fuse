@@ -1,0 +1,97 @@
+#! /bin/sh -e
+
+# Copyright (C) 2019 Tomoyuki Fujimori <moyu@dromozoa.com>
+#
+# This file is part of dromozoa-fuse.
+#
+# dromozoa-fuse is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# dromozoa-fuse is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
+
+dromozoa_umount() {
+  if fusermount -V >/dev/null 2>&1
+  then
+    fusermount -u "$1"
+  else
+    umount "$1"
+  fi
+}
+
+dromozoa_message() {
+  case X$1 in
+    XOK)
+      shift
+      if test -t 1
+      then
+        printf '\33[96m'
+        printf "$@"
+        printf '\33[0m\n'
+      else
+        printf "$@"
+      fi;;
+    XNG)
+      shift
+      if test -t 1
+      then
+        printf '\33[91m'
+        printf "$@"
+        printf '\33[0m\n'
+      else
+        printf "$@"
+      fi;;
+  esac
+}
+
+fuse_script=$1
+shift
+test_script=$1
+shift
+mount_point=$1
+shift
+
+mkdir -p "$mount_point"
+
+case X$# in
+  X0) lua "$fuse_script" "$mount_point" -d -s &;;
+  *) "$@" "$fuse_script" "$mount_point" -d -s &;;
+esac
+pid=$!
+
+sleep 1
+
+if sh -e "$test_script" "$mount_point"
+then
+  test_result=OK
+else
+  test_result=NG
+fi
+
+sleep 1
+
+dromozoa_umount "$mount_point"
+
+if wait "$pid"
+then
+  fuse_result=OK
+else
+  fuse_result=NG
+fi
+
+rmdir "$mount_point"
+
+dromozoa_message "$fuse_result" '[%s] %s' "$fuse_result" "$fuse_script"
+dromozoa_message "$test_result" '[%s] %s' "$test_result" "$test_script"
+
+case X$fuse_result$test_result in
+  XOKOK) ;;
+  *) exit 1;;
+esac
