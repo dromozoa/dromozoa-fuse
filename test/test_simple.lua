@@ -20,7 +20,144 @@ local fuse = require "dromozoa.fuse"
 
 local uid = unix.getuid();
 local gid = unix.getgid();
-local now = assert(unix.clock_gettime(unix.CLOCK_REALTIME))
+
+local current_time
+
+local function update_current_time()
+  current_time = assert(unix.clock_gettime(unix.CLOCK_REALTIME))
+end
+
+update_current_time()
+
+local function mode_dir(mode)
+  return unix.bor(unix.S_IFDIR, tonumber(mode, 8))
+end
+
+local vfs = {}
+
+local root = {
+  attr = {
+    st_mode = mode_dir "0755";
+    st_nlink = 1;
+    st_uid = uid;
+    st_gid = gid;
+    st_atime = current_time;
+    st_mtime = current_time;
+    st_ctime = current_time;
+    st_blocks = 0;
+  };
+  nodes = {
+    [".."] = true;
+  };
+}
+
+local function split(path)
+  if path == "/" then
+    error(-unix.EEXIST)
+  end
+  local parent_path, name = path:match "(.*)/([^/]+)$"
+  if #parent_path == 0 then
+    return "/", name
+  else
+    return parent_path, name
+  end
+end
+
+local function get(path)
+  local this = root
+  for name in path:gmatch "/([^/]+)" do
+    this = this.nodes[name]
+    if not this then
+      error(-unix.ENOENT)
+    end
+  end
+  return this
+end
+
+local function set(path, node)
+  local names = {}
+  local n = 0
+  for name in path:gmatch "/([^/]+)" do
+    n = n + 1
+    names[n] = name
+  end
+  if n == 0 then
+    error(-unix.EEXIST)
+  end
+  local this = root
+  for i = 1, n - 1 do
+    this = this.nodes[names[i]]
+    if not this then
+      error(-unix.ENOENT)
+    end
+  end
+  local name = names[n]
+  local nodes = this.nodes
+  if node then
+    if nodes[name] then
+      error(-unix.EEXIST)
+    end
+  else
+    if not nodes[name] then
+      error(-unix.ENOENT)
+    end
+  end
+  nodes[name] = node
+end
+
+local function link(oldpath, newpath)
+  local this = get(oldpath)
+  local attr = this.attr
+  attr.st_nlink = attr.st_nlink + 1
+  set(newpath, this)
+end
+
+link("/", "/.")
+
+local operations = {}
+
+function operations:getattr(path)
+  return get(path).attr
+end
+
+function operations:mkdir(path)
+  local parent_path, name = split(path)
+  update_current_time()
+  set(path, {
+    attr = {
+      st_mode = mode_dir "0755";
+      st_nlink = 1;
+      st_uid = uid;
+      st_gid = gid;
+      st_atime = current_time;
+      st_mtime = current_time;
+      st_ctime = current_time;
+      st_blocks = 0;
+    };
+    nodes = {};
+  })
+  link(parent_path, path .. "/..")
+  link(path, path .. "/.")
+  return 0
+end
+
+function operations:statfs(path)
+  return vfs
+end
+
+function operations:readdir(path, fill)
+  local this = get(path)
+  for name in pairs(this.nodes) do
+    fill(name)
+  end
+  return 0
+end
+
+local result = fuse.main({ arg[0], ... }, operations)
+assert(result == 0)
+
+--[====[
+
 
 local root = {
   {
@@ -251,5 +388,4 @@ function ops:closedir()
   return 0
 end
 
-local result = fuse.main({ arg[0], ... }, operations)
-assert(result == 0)
+]====]
