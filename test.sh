@@ -19,4 +19,4 @@
 
 mount_point=`pwd`/mount
 
-./test/runner test/test.lua test/test.sh "$mount_point" "$@"
+./test/runner test/test_empty.lua test/test_empty.sh "$mount_point" "$@"
