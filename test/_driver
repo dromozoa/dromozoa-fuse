@@ -1,3 +1,5 @@
+#! /bin/sh -e
+
 # Copyright (C) 2019 Tomoyuki Fujimori <moyu@dromozoa.com>
 #
 # This file is part of dromozoa-fuse.
@@ -15,32 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
-ACLOCAL_AMFLAGS = -I m4
+name=`expr "X$0" : 'X.*test_\([^/]*\)\.sh$'`
+mount_point=`pwd`/mount
 
-EXTRA_DIST = \
-	.gitignore \
-	README.md \
-	bind \
-	build_docs.lua \
-	docs \
-	dromozoa-fuse-*.rockspec \
-	m4/update \
-	test \
-	test.sh
-TESTS = \
-	test/test_empty.sh \
-	test/test_simple.sh
-
-luaexec_LTLIBRARIES = fuse.la
-
-noinst_HEADERS = common.hpp
-
-fuse_la_CPPFLAGS = -I$(top_srcdir)/bind
-fuse_la_LDFLAGS = -module -avoid-version -shared
-fuse_la_SOURCES = \
-	convert.cpp \
-	fill_dir.cpp \
-	handle.cpp \
-	main.cpp \
-	module.cpp \
-	operations.cpp
+./test/_runner "test/$name.lua" "test/$name.sh" "mount_point" "$@"

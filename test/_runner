@@ -37,6 +37,7 @@ dromozoa_message() {
         printf '\33[0m\n'
       else
         printf "$@"
+        printf '\n'
       fi;;
     XNG)
       shift
@@ -47,6 +48,7 @@ dromozoa_message() {
         printf '\33[0m\n'
       else
         printf "$@"
+        printf '\n'
       fi;;
   esac
 }

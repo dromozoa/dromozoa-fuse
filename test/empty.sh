@@ -15,32 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
-ACLOCAL_AMFLAGS = -I m4
+mount_point=$1
 
-EXTRA_DIST = \
-	.gitignore \
-	README.md \
-	bind \
-	build_docs.lua \
-	docs \
-	dromozoa-fuse-*.rockspec \
-	m4/update \
-	test \
-	test.sh
-TESTS = \
-	test/test_empty.sh \
-	test/test_simple.sh
+df "$mount_point"
 
-luaexec_LTLIBRARIES = fuse.la
+ls -al "$mount_point"
 
-noinst_HEADERS = common.hpp
+case X`ls -a "$mount_point"` in
+  X) exit 1;;
+esac
 
-fuse_la_CPPFLAGS = -I$(top_srcdir)/bind
-fuse_la_LDFLAGS = -module -avoid-version -shared
-fuse_la_SOURCES = \
-	convert.cpp \
-	fill_dir.cpp \
-	handle.cpp \
-	main.cpp \
-	module.cpp \
-	operations.cpp
+if test -f "$mount_point/no_such_file"
+then
+  exit 1
+fi

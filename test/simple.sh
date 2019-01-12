@@ -15,32 +15,56 @@
 # You should have received a copy of the GNU General Public License
 # along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
-ACLOCAL_AMFLAGS = -I m4
+mount_point=$1
 
-EXTRA_DIST = \
-	.gitignore \
-	README.md \
-	bind \
-	build_docs.lua \
-	docs \
-	dromozoa-fuse-*.rockspec \
-	m4/update \
-	test \
-	test.sh
-TESTS = \
-	test/test_empty.sh \
-	test/test_simple.sh
+cd "$mount_point"
 
-luaexec_LTLIBRARIES = fuse.la
+if test -d foo/bar
+then
+  exit 1
+fi
 
-noinst_HEADERS = common.hpp
+mkdir foo
+mkdir foo/bar
 
-fuse_la_CPPFLAGS = -I$(top_srcdir)/bind
-fuse_la_LDFLAGS = -module -avoid-version -shared
-fuse_la_SOURCES = \
-	convert.cpp \
-	fill_dir.cpp \
-	handle.cpp \
-	main.cpp \
-	module.cpp \
-	operations.cpp
+if test -d foo/bar
+then
+  :
+else
+  exit 1
+fi
+
+if test -f foo/bar/test.txt
+then
+  exit 1
+fi
+
+echo foo >foo/bar/test.txt
+echo bar >>foo/bar/test.txt
+echo baz >>foo/bar/test.txt
+case X`cat foo/bar/test.txt` in
+  X) exit 1;;
+esac
+cat foo/bar/test.txt
+
+if test -f foo/bar/test.txt
+then
+  :
+else
+  exit 1
+fi
+
+rm foo/bar/test.txt
+
+if test -f foo/bar/test.txt
+then
+  exit 1
+fi
+
+rmdir foo/bar
+rmdir foo
+
+if test -d foo/bar
+then
+  exit 1
+fi
