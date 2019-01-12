@@ -31,23 +31,6 @@
 
 namespace dromozoa {
   namespace {
-    int call(lua_State* L, int nargs) {
-      if (lua_pcall(L, nargs, 1, 0) == 0) {
-        if (luaX_is_integer(L, -1)) {
-          return lua_tointeger(L, -1);
-        } else if (lua_isnil(L, -1)) {
-          return 0;
-        }
-        DROMOZOA_UNEXPECTED("must return an integer");
-      } else {
-        if (luaX_is_integer(L, -1)) {
-          return lua_tointeger(L, -1);
-        }
-        DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
-      }
-      return -ENOSYS;
-    }
-
     template <class T>
     class scoped_converter {
     public:
@@ -74,6 +57,23 @@ namespace dromozoa {
 
     typedef scoped_converter<struct fuse_conn_info> conn_info;
     typedef scoped_converter<struct fuse_file_info> file_info;
+
+    int call(lua_State* L, int nargs, int d = 0) {
+      if (lua_pcall(L, nargs, 1, 0) == 0) {
+        if (luaX_is_integer(L, -1)) {
+          return lua_tointeger(L, -1);
+        } else if (lua_isnil(L, -1)) {
+          return d;
+        }
+        DROMOZOA_UNEXPECTED("must return an integer");
+      } else {
+        if (luaX_is_integer(L, -1)) {
+          return lua_tointeger(L, -1);
+        }
+        DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+      }
+      return -ENOSYS;
+    }
 
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/stat.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L89
