@@ -59,6 +59,29 @@ namespace dromozoa {
       return result;
     }
 
+    class file_info {
+    public:
+      file_info(lua_State* state, struct fuse_file_info* ptr)
+        : state_(state),
+          ptr_(ptr),
+          index_(convert(state, ptr)) {}
+
+      ~file_info() {
+        convert(state_, index_, ptr_);
+      }
+
+      int index() const {
+        return index_;
+      }
+
+    private:
+      lua_State* state_;
+      struct fuse_file_info* ptr_;
+      int index_;
+      file_info(const file_info&);
+      file_info& operator=(const file_info&);
+    };
+
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/stat.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L89
     int getattr(const char* path, struct stat* buffer) {
@@ -243,15 +266,16 @@ namespace dromozoa {
 
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/open.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L156
-    int open(const char* path, struct fuse_file_info* info) {
+    int open(const char* path, struct fuse_file_info* info_ptr) {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      int info_index = convert(L, info);
+      file_info info(L, info_ptr);
+      // int info_index = convert(L, info);
       if (self->prepare(L, "open")) {
         luaX_push(L, path);
-        lua_pushvalue(L, info_index);
-        return call(L, 3, info_index, info);
+        lua_pushvalue(L, info.index());
+        return call(L, 3);
       }
       return -ENOSYS;
     }
@@ -509,15 +533,27 @@ namespace dromozoa {
 
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/fstat.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L384
-    int fgetattr(const char* path, struct stat* buffer, struct fuse_file_info* info) {
+    int fgetattr(const char* path, struct stat* buffer, struct fuse_file_info* info_ptr) {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      int info_index = convert(L, info);
+      file_info info(L, info_ptr);
       if (self->prepare(L, "fgetattr")) {
         luaX_push(L, path);
-        lua_pushvalue(L, info_index);
-        return call(L, 3, info_index, info);
+        lua_pushvalue(L, info.index());
+        if (lua_pcall(L, 3, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          } else if (convert(L, -1, buffer)) {
+            return 0;
+          }
+          DROMOZOA_UNEXPECTED("must return a table");
+        } else {
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          }
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
       }
       return -ENOSYS;
     }
