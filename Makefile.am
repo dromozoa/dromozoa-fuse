@@ -26,8 +26,10 @@ EXTRA_DIST = \
 	dromozoa-fuse-*.rockspec \
 	m4/update \
 	test \
-	$(TESTS)
-TESTS = test.sh
+	test.sh
+TESTS = \
+	test/test_empty \
+	test/test_simple
 
 luaexec_LTLIBRARIES = fuse.la
 
