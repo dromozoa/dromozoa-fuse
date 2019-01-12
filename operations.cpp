@@ -19,6 +19,7 @@
 
 #include <errno.h>
 #include <string.h>
+
 #include <algorithm>
 
 #define DROMOZOA_SET_OPERATION(name) \
@@ -308,17 +309,7 @@ namespace dromozoa {
       if (self->prepare(L, "write")) {
         luaX_push(L, path, luaX_string_reference(buffer, size), offset);
         lua_pushvalue(L, info.index());
-        if (lua_pcall(L, 5, 1, 0) == 0) {
-          if (luaX_is_integer(L, -1)) {
-            return lua_tointeger(L, -1);
-          }
-          DROMOZOA_UNEXPECTED("must return an integer");
-        } else {
-          if (luaX_is_integer(L, -1)) {
-            return lua_tointeger(L, -1);
-          }
-          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
-        }
+        return call(L, 5, size);
       }
       return -ENOSYS;
     }

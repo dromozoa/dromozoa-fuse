@@ -171,7 +171,6 @@ function operations:unlink(path)
   set(path)
   decrement_link(node)
   update_mtime(parent_node)
-  return 0
 end
 
 function operations:rmdir(path)
@@ -194,7 +193,6 @@ function operations:rmdir(path)
   decrement_link(node)
   decrement_link(parent_node)
   update_mtime(parent_node)
-  return 0
 end
 
 function operations:mkdir(path)
@@ -217,7 +215,6 @@ function operations:mkdir(path)
   link(parent_path, path .. "/..")
   link(path, path .. "/.")
   update_mtime(parent_node)
-  return 0
 end
 
 function operations:read(path, size, offset)
@@ -241,7 +238,6 @@ function operations:write(path, buffer, offset)
   end
   print(("WRITE %s %d %d %q"):format(path, #buffer, offset, table.concat(content)))
   node.attr.st_size = #content
-  return n
 end
 
 function operations:statfs(path)
@@ -253,7 +249,6 @@ function operations:readdir(path, fill)
   for name in pairs(this.nodes) do
     fill(name)
   end
-  return 0
 end
 
 function operations:create(path, mode)
@@ -272,7 +267,6 @@ function operations:create(path, mode)
     };
     content = {};
   })
-  return 0
 end
 
 function operations:ftruncate(path, size)
@@ -289,9 +283,7 @@ function operations:ftruncate(path, size)
     end
   end
   node.attr.st_size = #content
-  return 0
 end
-
 
 local result = fuse.main({ arg[0], ... }, operations)
 assert(result == 0)
