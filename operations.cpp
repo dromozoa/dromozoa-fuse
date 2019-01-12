@@ -160,17 +160,7 @@ namespace dromozoa {
       luaX_top_saver save(L);
       if (self->prepare(L, "symlink")) {
         luaX_push(L, target, path);
-        if (lua_pcall(L, 3, 1, 0) == 0) {
-          if (luaX_is_integer(L, -1)) {
-            return lua_tointeger(L, -1);
-          }
-          DROMOZOA_UNEXPECTED("must return an integer");
-        } else {
-          if (luaX_is_integer(L, -1)) {
-            return lua_tointeger(L, -1);
-          }
-          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
-        }
+        return call(L, 3);
       }
       return -ENOSYS;
     }
@@ -183,17 +173,7 @@ namespace dromozoa {
       luaX_top_saver save(L);
       if (self->prepare(L, "rename")) {
         luaX_push(L, oldpath, newpath);
-        if (lua_pcall(L, 3, 1, 0) == 0) {
-          if (luaX_is_integer(L, -1)) {
-            return lua_tointeger(L, -1);
-          }
-          DROMOZOA_UNEXPECTED("must return an integer");
-        } else {
-          if (luaX_is_integer(L, -1)) {
-            return lua_tointeger(L, -1);
-          }
-          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
-        }
+        return call(L, 3);
       }
       return -ENOSYS;
     }
@@ -206,17 +186,7 @@ namespace dromozoa {
       luaX_top_saver save(L);
       if (self->prepare(L, "link")) {
         luaX_push(L, oldpath, newpath);
-        if (lua_pcall(L, 3, 1, 0) == 0) {
-          if (luaX_is_integer(L, -1)) {
-            return lua_tointeger(L, -1);
-          }
-          DROMOZOA_UNEXPECTED("must return an integer");
-        } else {
-          if (luaX_is_integer(L, -1)) {
-            return lua_tointeger(L, -1);
-          }
-          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
-        }
+        return call(L, 3);
       }
       return -ENOSYS;
     }
@@ -229,17 +199,7 @@ namespace dromozoa {
       luaX_top_saver save(L);
       if (self->prepare(L, "chmod")) {
         luaX_push(L, path, mode);
-        if (lua_pcall(L, 3, 1, 0) == 0) {
-          if (luaX_is_integer(L, -1)) {
-            return lua_tointeger(L, -1);
-          }
-          DROMOZOA_UNEXPECTED("must return an integer");
-        } else {
-          if (luaX_is_integer(L, -1)) {
-            return lua_tointeger(L, -1);
-          }
-          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
-        }
+        return call(L, 3);
       }
       return -ENOSYS;
     }
@@ -252,17 +212,7 @@ namespace dromozoa {
       luaX_top_saver save(L);
       if (self->prepare(L, "chown")) {
         luaX_push(L, path, uid, gid);
-        if (lua_pcall(L, 4, 1, 0) == 0) {
-          if (luaX_is_integer(L, -1)) {
-            return lua_tointeger(L, -1);
-          }
-          DROMOZOA_UNEXPECTED("must return an integer");
-        } else {
-          if (luaX_is_integer(L, -1)) {
-            return lua_tointeger(L, -1);
-          }
-          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
-        }
+        return call(L, 4);
       }
       return -ENOSYS;
     }
@@ -275,17 +225,7 @@ namespace dromozoa {
       luaX_top_saver save(L);
       if (self->prepare(L, "truncate")) {
         luaX_push(L, path, size);
-        if (lua_pcall(L, 3, 1, 0) == 0) {
-          if (luaX_is_integer(L, -1)) {
-            return lua_tointeger(L, -1);
-          }
-          DROMOZOA_UNEXPECTED("must return an integer");
-        } else {
-          if (luaX_is_integer(L, -1)) {
-            return lua_tointeger(L, -1);
-          }
-          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
-        }
+        return call(L, 3);
       }
       return -ENOSYS;
     }
@@ -613,17 +553,7 @@ namespace dromozoa {
       luaX_top_saver save(L);
       if (self->prepare(L, "access")) {
         luaX_push(L, path, mode);
-        if (lua_pcall(L, 3, 1, 0) == 0) {
-          if (luaX_is_integer(L, -1)) {
-            return lua_tointeger(L, -1);
-          }
-          DROMOZOA_UNEXPECTED("must return an integer");
-        } else {
-          if (luaX_is_integer(L, -1)) {
-            return lua_tointeger(L, -1);
-          }
-          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
-        }
+        return call(L, 3);
       }
       return -ENOSYS;
     }
@@ -721,17 +651,7 @@ namespace dromozoa {
         } else {
           luaX_push(L, luaX_nil, luaX_nil);
         }
-        if (lua_pcall(L, 4, 1, 0) == 0) {
-          if (luaX_is_integer(L, -1)) {
-            return lua_tointeger(L, -1);
-          }
-          DROMOZOA_UNEXPECTED("must return an integer");
-        } else {
-          if (luaX_is_integer(L, -1)) {
-            return lua_tointeger(L, -1);
-          }
-          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
-        }
+        return call(L, 4);
       }
       return -ENOSYS;
     }
