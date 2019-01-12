@@ -32,41 +32,31 @@
 namespace dromozoa {
   namespace {
     int call(lua_State* L, int nargs) {
-      int result = -ENOSYS;
       if (lua_pcall(L, nargs, 1, 0) == 0) {
         if (luaX_is_integer(L, -1)) {
-          result = lua_tointeger(L, -1);
+          return lua_tointeger(L, -1);
         } else if (lua_isnil(L, -1)) {
-          result = 0;
-        } else {
-          DROMOZOA_UNEXPECTED("must return an integer");
+          return 0;
         }
+        DROMOZOA_UNEXPECTED("must return an integer");
       } else {
         if (luaX_is_integer(L, -1)) {
-          result = lua_tointeger(L, -1);
-        } else {
-          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+          return lua_tointeger(L, -1);
         }
+        DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
       }
-      return result;
+      return -ENOSYS;
     }
 
-    int call(lua_State* L, int nargs, int info_index, struct fuse_file_info* info) {
-      int result = call(L, nargs);
-      if (result == 0) {
-        convert(L, info_index, info);
-      }
-      return result;
-    }
-
-    class file_info {
+    template <class T>
+    class scoped_converter {
     public:
-      file_info(lua_State* state, struct fuse_file_info* ptr)
+      scoped_converter(lua_State* state, T* ptr)
         : state_(state),
           ptr_(ptr),
           index_(convert(state, ptr)) {}
 
-      ~file_info() {
+      ~scoped_converter() {
         convert(state_, index_, ptr_);
       }
 
@@ -76,11 +66,14 @@ namespace dromozoa {
 
     private:
       lua_State* state_;
-      struct fuse_file_info* ptr_;
+      T* ptr_;
       int index_;
-      file_info(const file_info&);
-      file_info& operator=(const file_info&);
+      scoped_converter(const scoped_converter&);
+      scoped_converter& operator=(const scoped_converter&);
     };
+
+    typedef scoped_converter<struct fuse_conn_info> conn_info;
+    typedef scoped_converter<struct fuse_file_info> file_info;
 
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/stat.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L89
@@ -461,12 +454,10 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      int info_index = convert(L, info_ptr);
+      conn_info info(L, info_ptr);
       if (self->prepare(L, "init")) {
-        lua_pushvalue(L, info_index);
-        if (lua_pcall(L, 2, 0, 0) == 0) {
-          convert(L, info_index, info_ptr);
-        } else {
+        lua_pushvalue(L, info.index());
+        if (lua_pcall(L, 2, 0, 0) != 0) {
           DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
         }
       }
@@ -503,11 +494,11 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      int info_index = convert(L, info_ptr);
+      file_info info(L, info_ptr);
       if (self->prepare(L, "create")) {
         luaX_push(L, path, mode);
-        lua_pushvalue(L, info_index);
-        return call(L, 4, info_index, info_ptr);
+        lua_pushvalue(L, info.index());
+        return call(L, 4);
       }
       return -ENOSYS;
     }
@@ -518,11 +509,11 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      int info_index = convert(L, info_ptr);
+      file_info info(L, info_ptr);
       if (self->prepare(L, "ftruncate")) {
         luaX_push(L, path, size);
-        lua_pushvalue(L, info_index);
-        return call(L, 4, info_index, info_ptr);
+        lua_pushvalue(L, info.index());
+        return call(L, 4);
       }
       return -ENOSYS;
     }
