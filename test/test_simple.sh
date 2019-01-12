@@ -18,15 +18,53 @@
 mount_point=$1
 
 cd "$mount_point"
-ls -al
+
+if test -d foo/bar
+then
+  exit 1
+fi
+
 mkdir foo
-ls -al
 mkdir foo/bar
-ls -al
-echo foo >test.txt
-ls -al
-echo bar >>test.txt
-ls -al
-echo baz >>test.txt
-ls -al
-cat test.txt
+
+if test -d foo/bar
+then
+  :
+else
+  exit 1
+fi
+
+if test -f foo/bar/test.txt
+then
+  exit 1
+fi
+
+echo foo >foo/bar/test.txt
+echo bar >>foo/bar/test.txt
+echo baz >>foo/bar/test.txt
+case X`cat foo/bar/test.txt` in
+  X) exit 1;;
+esac
+cat foo/bar/test.txt
+
+if test -f foo/bar/test.txt
+then
+  :
+else
+  exit 1
+fi
+
+rm foo/bar/test.txt
+
+if test -f foo/bar/test.txt
+then
+  exit 1
+fi
+
+rmdir foo/bar
+rmdir foo
+
+if test -d foo/bar
+then
+  exit 1
+fi
