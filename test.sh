@@ -19,7 +19,7 @@
 
 mount_point=`pwd`/mount
 
-for i in test/test_*
+for i in test/test_*.sh
 do
   "./$i" "$@"
 done

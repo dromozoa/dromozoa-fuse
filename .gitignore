@@ -30,6 +30,6 @@
 /stamp-h1
 /test-driver
 /test-suite.log
-/test/test*.log
-/test/test*.trs
+/test/test_*.log
+/test/test_*.trs
 Makefile

@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
-name=`expr "X$0" : 'X.*test_\([^/]*\)$'`
+name=`expr "X$0" : 'X.*test_\([^/]*\)\.sh$'`
 mount_point=`pwd`/mount
 
 ./test/_runner "test/$name.lua" "test/$name.sh" "mount_point" "$@"
