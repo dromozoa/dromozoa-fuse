@@ -1,6 +1,6 @@
 #! /bin/sh -e
 
-# Copyright (C) 2018,2019 Tomoyuki Fujimori <moyu@dromozoa.com>
+# Copyright (C) 2019 Tomoyuki Fujimori <moyu@dromozoa.com>
 #
 # This file is part of dromozoa-fuse.
 #
@@ -17,9 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
+name=`expr "X$0" : 'X.*test_\([^/]*\)$'`
 mount_point=`pwd`/mount
 
-for i in test/test_*
-do
-  "./$i" "$@"
-done
+./test/_runner "test/$name.lua" "test/$name.sh" "mount_point" "$@"

@@ -12,7 +12,7 @@ description = {
 }
 test = {
   type = "command";
-  command = "./test.sh";
+  command = "make check";
 }
 build = {
   type = "command";
