@@ -39,7 +39,6 @@ function operations:readdir(path, fill)
   if path == "/" then
     fill "."
     fill ".."
-    return 0
   else
     return -unix.ENOENT
   end

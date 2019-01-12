@@ -31,6 +31,23 @@
 
 namespace dromozoa {
   namespace {
+    int call(lua_State* L, int nargs, int default_result = 0) {
+      if (lua_pcall(L, nargs, 1, 0) == 0) {
+        if (lua_isnil(L, -1)) {
+          return default_result;
+        } else if (luaX_is_integer(L, -1)) {
+          return lua_tointeger(L, -1);
+        }
+        DROMOZOA_UNEXPECTED("must return an integer");
+      } else {
+        if (luaX_is_integer(L, -1)) {
+          return lua_tointeger(L, -1);
+        }
+        DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+      }
+      return -ENOSYS;
+    }
+
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/stat.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L89
     int getattr(const char* path, struct stat* buffer) {
@@ -531,7 +548,10 @@ namespace dromozoa {
         luaX_push(L, offset);
         lua_pushvalue(L, info_index);
         if (lua_pcall(L, 5, 1, 0) == 0) {
-          if (luaX_is_integer(L, -1)) {
+          if (lua_isnil(L, -1)) {
+            convert(L, info_index, info);
+            return 0;
+          } else if (luaX_is_integer(L, -1)) {
             convert(L, info_index, info);
             return lua_tointeger(L, -1);
           }
