@@ -17,16 +17,16 @@
 
 mount_point=$1
 
-df "$mount_point"
-
-ls -al "$mount_point"
-
-case X`ls -a "$mount_point"` in
-  X) exit 1;;
-esac
-
-if test -f "$mount_point/no_such_file"
-then
-  exit 1
-fi
-
+cd "$mount_point"
+ls -al
+mkdir foo
+ls -al
+mkdir foo/bar
+ls -al
+echo foo >test.txt
+ls -al
+echo bar >>test.txt
+ls -al
+echo baz >>test.txt
+ls -al
+cat test.txt
