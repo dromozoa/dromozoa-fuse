@@ -1,4 +1,4 @@
--- Copyright (C) 2018,2019 Tomoyuki Fujimori <moyu@dromozoa.com>
+-- Copyright (C) 2019 Tomoyuki Fujimori <moyu@dromozoa.com>
 --
 -- This file is part of dromozoa-fuse.
 --
@@ -39,7 +39,6 @@ function operations:readdir(path, fill)
   if path == "/" then
     fill "."
     fill ".."
-    return 0
   else
     return -unix.ENOENT
   end

@@ -1,6 +1,4 @@
-#! /bin/sh -e
-
-# Copyright (C) 2018,2019 Tomoyuki Fujimori <moyu@dromozoa.com>
+# Copyright (C) 2019 Tomoyuki Fujimori <moyu@dromozoa.com>
 #
 # This file is part of dromozoa-fuse.
 #
@@ -17,10 +15,56 @@
 # You should have received a copy of the GNU General Public License
 # along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
-mount_point=`pwd`/mount
+mount_point=$1
 
-for i in test/test*.lua
-do
-  j=`expr "X$i" : 'X\(.*\)\.lua$' `
-  ./test/runner "$i" "$j.sh" "$mount_point" "$@"
-done
+cd "$mount_point"
+
+if test -d foo/bar
+then
+  exit 1
+fi
+
+mkdir foo
+mkdir foo/bar
+
+if test -d foo/bar
+then
+  :
+else
+  exit 1
+fi
+
+if test -f foo/bar/test.txt
+then
+  exit 1
+fi
+
+echo foo >foo/bar/test.txt
+echo bar >>foo/bar/test.txt
+echo baz >>foo/bar/test.txt
+case X`cat foo/bar/test.txt` in
+  X) exit 1;;
+esac
+cat foo/bar/test.txt
+
+if test -f foo/bar/test.txt
+then
+  :
+else
+  exit 1
+fi
+
+rm foo/bar/test.txt
+
+if test -f foo/bar/test.txt
+then
+  exit 1
+fi
+
+rmdir foo/bar
+rmdir foo
+
+if test -d foo/bar
+then
+  exit 1
+fi
