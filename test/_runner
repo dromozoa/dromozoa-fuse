@@ -33,20 +33,20 @@ dromozoa_message() {
       if test -t 1
       then
         printf '\33[96m'
-        printf "$@"
+        printf '%s' "$*"
         printf '\33[0m\n'
       else
-        printf "$@"
+        printf '%s' "$*"
       fi;;
     XNG)
       shift
       if test -t 1
       then
         printf '\33[91m'
-        printf "$@"
+        printf '%s' "$*"
         printf '\33[0m\n'
       else
-        printf "$@"
+        printf '%s' "$*"
       fi;;
   esac
 }
