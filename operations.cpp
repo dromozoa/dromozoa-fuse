@@ -271,7 +271,6 @@ namespace dromozoa {
       lua_State* L = self->state();
       luaX_top_saver save(L);
       file_info info(L, info_ptr);
-      // int info_index = convert(L, info);
       if (self->prepare(L, "open")) {
         luaX_push(L, path);
         lua_pushvalue(L, info.index());
@@ -282,22 +281,20 @@ namespace dromozoa {
 
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/read.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L175
-    int read(const char* path, char* buffer, size_t size, off_t offset, struct fuse_file_info* info) {
+    int read(const char* path, char* buffer, size_t size, off_t offset, struct fuse_file_info* info_ptr) {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      int info_index = convert(L, info);
+      file_info info(L, info_ptr);
       if (self->prepare(L, "read")) {
         luaX_push(L, path, size, offset);
-        lua_pushvalue(L, info_index);
+        lua_pushvalue(L, info.index());
         if (lua_pcall(L, 5, 1, 0) == 0) {
           if (luaX_is_integer(L, -1)) {
-            convert(L, info_index, info);
             return lua_tointeger(L, -1);
           } else if (luaX_string_reference result = luaX_to_string(L, -1)) {
             memset(buffer, 0, size);
             memcpy(buffer, result.data(), std::min(size, result.size()));
-            convert(L, info_index, info);
             return result.size();
           }
           DROMOZOA_UNEXPECTED("must return a string");
@@ -310,17 +307,16 @@ namespace dromozoa {
 
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/write.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L189
-    int write(const char* path, const char* buffer, size_t size, off_t offset, struct fuse_file_info* info) {
+    int write(const char* path, const char* buffer, size_t size, off_t offset, struct fuse_file_info* info_ptr) {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      int info_index = convert(L, info);
+      file_info info(L, info_ptr);
       if (self->prepare(L, "write")) {
         luaX_push(L, path, luaX_string_reference(buffer, size), offset);
-        lua_pushvalue(L, info_index);
+        lua_pushvalue(L, info.index());
         if (lua_pcall(L, 5, 1, 0) == 0) {
           if (luaX_is_integer(L, -1)) {
-            convert(L, info_index, info);
             return lua_tointeger(L, -1);
           }
           DROMOZOA_UNEXPECTED("must return an integer");
@@ -360,116 +356,116 @@ namespace dromozoa {
     }
 
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L209
-    int flush(const char* path, struct fuse_file_info* info) {
+    int flush(const char* path, struct fuse_file_info* info_ptr) {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      int info_index = convert(L, info);
+      file_info info(L, info_ptr);
       if (self->prepare(L, "flush")) {
         luaX_push(L, path);
-        lua_pushvalue(L, info_index);
-        return call(L, 3, info_index, info);
+        lua_pushvalue(L, info.index());
+        return call(L, 3);
       }
       return -ENOSYS;
     }
 
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L234
-    int release(const char* path, struct fuse_file_info* info) {
+    int release(const char* path, struct fuse_file_info* info_ptr) {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      int info_index = convert(L, info);
+      file_info info(L, info_ptr);
       if (self->prepare(L, "release")) {
         luaX_push(L, path);
-        lua_pushvalue(L, info_index);
-        return call(L, 3, info_index, info);
+        lua_pushvalue(L, info.index());
+        return call(L, 3);
       }
       return -ENOSYS;
     }
 
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/fsync.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L250
-    int fsync(const char* path, int datasync, struct fuse_file_info* info) {
+    int fsync(const char* path, int datasync, struct fuse_file_info* info_ptr) {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      int info_index = convert(L, info);
+      file_info info(L, info_ptr);
       if (self->prepare(L, "fsync")) {
         luaX_push(L, path, datasync);
-        lua_pushvalue(L, info_index);
-        return call(L, 4, info_index, info);
+        lua_pushvalue(L, info.index());
+        return call(L, 4);
       }
       return -ENOSYS;
     }
 
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L271
-    int opendir(const char* path, struct fuse_file_info* info) {
+    int opendir(const char* path, struct fuse_file_info* info_ptr) {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      int info_index = convert(L, info);
+      file_info info(L, info_ptr);
       if (self->prepare(L, "opendir")) {
         luaX_push(L, path);
-        lua_pushvalue(L, info_index);
-        return call(L, 3, info_index, info);
+        lua_pushvalue(L, info.index());
+        return call(L, 3);
       }
       return -ENOSYS;
     }
 
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L283
-    int readdir(const char* path, void* buffer, fuse_fill_dir_t function, off_t offset, struct fuse_file_info* info) {
+    int readdir(const char* path, void* buffer, fuse_fill_dir_t function, off_t offset, struct fuse_file_info* info_ptr) {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      int info_index = convert(L, info);
+      file_info info(L, info_ptr);
       if (self->prepare(L, "readdir")) {
         luaX_push(L, path);
         scoped_handle scope(new_fill_dir(L, function, buffer));
         luaX_push(L, offset);
-        lua_pushvalue(L, info_index);
-        return call(L, 5, info_index, info);
+        lua_pushvalue(L, info.index());
+        return call(L, 5);
       }
       return -ENOSYS;
     }
 
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L309
-    int releasedir(const char* path, struct fuse_file_info* info) {
+    int releasedir(const char* path, struct fuse_file_info* info_ptr) {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      int info_index = convert(L, info);
+      file_info info(L, info_ptr);
       if (self->prepare(L, "releasedir")) {
         luaX_push(L, path);
-        lua_pushvalue(L, info_index);
-        return call(L, 3, info_index, info);
+        lua_pushvalue(L, info.index());
+        return call(L, 3);
       }
       return -ENOSYS;
     }
 
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L313
-    int fsyncdir(const char* path, int datasync, struct fuse_file_info* info) {
+    int fsyncdir(const char* path, int datasync, struct fuse_file_info* info_ptr) {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      int info_index = convert(L, info);
+      file_info info(L, info_ptr);
       if (self->prepare(L, "fsyncdir")) {
         luaX_push(L, path, datasync);
-        lua_pushvalue(L, info_index);
-        return call(L, 4, info_index, info);
+        lua_pushvalue(L, info.index());
+        return call(L, 4);
       }
       return -ENOSYS;
     }
 
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L322
-    void* init(struct fuse_conn_info* info) {
+    void* init(struct fuse_conn_info* info_ptr) {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      int info_index = convert(L, info);
+      int info_index = convert(L, info_ptr);
       if (self->prepare(L, "init")) {
         lua_pushvalue(L, info_index);
         if (lua_pcall(L, 2, 0, 0) == 0) {
-          convert(L, info_index, info);
+          convert(L, info_index, info_ptr);
         } else {
           DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
         }
@@ -503,30 +499,30 @@ namespace dromozoa {
     }
 
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L356
-    int create(const char* path, mode_t mode, struct fuse_file_info* info) {
+    int create(const char* path, mode_t mode, struct fuse_file_info* info_ptr) {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      int info_index = convert(L, info);
+      int info_index = convert(L, info_ptr);
       if (self->prepare(L, "create")) {
         luaX_push(L, path, mode);
         lua_pushvalue(L, info_index);
-        return call(L, 4, info_index, info);
+        return call(L, 4, info_index, info_ptr);
       }
       return -ENOSYS;
     }
 
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/ftruncate.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L370
-    int ftruncate(const char* path, off_t size, struct fuse_file_info* info) {
+    int ftruncate(const char* path, off_t size, struct fuse_file_info* info_ptr) {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      int info_index = convert(L, info);
+      int info_index = convert(L, info_ptr);
       if (self->prepare(L, "ftruncate")) {
         luaX_push(L, path, size);
         lua_pushvalue(L, info_index);
-        return call(L, 4, info_index, info);
+        return call(L, 4, info_index, info_ptr);
       }
       return -ENOSYS;
     }
