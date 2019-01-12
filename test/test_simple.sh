@@ -29,3 +29,4 @@ if test -f "$mount_point/no_such_file"
 then
   exit 1
 fi
+
