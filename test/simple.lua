@@ -99,7 +99,7 @@ local root = {
 
 local function split(path)
   if path == "/" then
-    error(-unix.EEXIST)
+    error(-unix.EEXIST, 0)
   end
   local parent_path, name = path:match "(.*)/([^/]+)$"
   if #parent_path == 0 then
@@ -114,7 +114,7 @@ local function get(path)
   for name in path:gmatch "/([^/]+)" do
     this = this.nodes[name]
     if not this then
-      error(-unix.ENOENT)
+      error(-unix.ENOENT, 0)
     end
   end
   return this
@@ -128,24 +128,24 @@ local function set(path, node)
     names[n] = name
   end
   if n == 0 then
-    error(-unix.EEXIST)
+    error(-unix.EEXIST, 0)
   end
   local this = root
   for i = 1, n - 1 do
     this = this.nodes[names[i]]
     if not this then
-      error(-unix.ENOENT)
+      error(-unix.ENOENT, 0)
     end
   end
   local name = names[n]
   local nodes = this.nodes
   if node then
     if nodes[name] then
-      error(-unix.EEXIST)
+      error(-unix.EEXIST, 0)
     end
   else
     if not nodes[name] then
-      error(-unix.ENOENT)
+      error(-unix.ENOENT, 0)
     end
   end
   nodes[name] = node
@@ -179,10 +179,10 @@ function operations:rmdir(path)
   local parent_node = get(parent_path)
 
   if unix.band(node.attr.st_mode, unix.S_IFDIR) == 0 then
-    error(-unix.ENOTDIR)
+    error(-unix.ENOTDIR, 0)
   end
   if not is_empty_dir(node) then
-    error(-unix.ENOTEMPTY)
+    error(-unix.ENOTEMPTY, 0)
   end
 
   update_current_time()
@@ -219,25 +219,20 @@ end
 
 function operations:read(path, size, offset)
   local node = get(path)
-  local content = node.content
-  local buffer = {}
-  for i = 1, size do
-    buffer[i] = content[offset + i]
-  end
-  print(("READ %s %d %d %q"):format(path, size, offset, table.concat(buffer)))
-  return table.concat(buffer)
+  update_current_time()
+  local result = node.content:get(offset, size)
+  update_atime(node)
+  return result
 end
 
 
 function operations:write(path, buffer, offset)
   local node = get(path)
   local content = node.content
-  local n = #buffer
-  for i = 1, n do
-    content[offset + i] = buffer:sub(i, i)
-  end
-  print(("WRITE %s %d %d %q"):format(path, #buffer, offset, table.concat(content)))
+  update_current_time()
+  content:put(offset, buffer)
   node.attr.st_size = #content
+  update_mtime(node)
 end
 
 function operations:statfs(path)
@@ -245,10 +240,12 @@ function operations:statfs(path)
 end
 
 function operations:readdir(path, fill)
-  local this = get(path)
-  for name in pairs(this.nodes) do
+  local node = get(path)
+  update_current_time()
+  for name in pairs(node.nodes) do
     fill(name)
   end
+  update_atime(node)
 end
 
 function operations:create(path, mode)
@@ -264,24 +261,16 @@ function operations:create(path, mode)
       st_mtime = current_time;
       st_ctime = current_time;
       st_blocks = 0;
+      st_size = 0
     };
-    content = {};
+    content = fuse.buffer();
   })
 end
 
 function operations:ftruncate(path, size)
   local node = get(path)
   local content = node.content
-  local n = #content
-  if n < size then
-    for i = n + 1, size do
-      content[i] = "\0"
-    end
-  else
-    for i = size + 1, n do
-      content[i] = nil
-    end
-  end
+  content:resize(size)
   node.attr.st_size = #content
 end
 
