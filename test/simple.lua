@@ -99,7 +99,7 @@ local root = {
 
 local function split(path)
   if path == "/" then
-    error(-unix.EEXIST)
+    error(-unix.EEXIST, 0)
   end
   local parent_path, name = path:match "(.*)/([^/]+)$"
   if #parent_path == 0 then
@@ -114,7 +114,7 @@ local function get(path)
   for name in path:gmatch "/([^/]+)" do
     this = this.nodes[name]
     if not this then
-      error(-unix.ENOENT)
+      error(-unix.ENOENT, 0)
     end
   end
   return this
@@ -128,24 +128,24 @@ local function set(path, node)
     names[n] = name
   end
   if n == 0 then
-    error(-unix.EEXIST)
+    error(-unix.EEXIST, 0)
   end
   local this = root
   for i = 1, n - 1 do
     this = this.nodes[names[i]]
     if not this then
-      error(-unix.ENOENT)
+      error(-unix.ENOENT, 0)
     end
   end
   local name = names[n]
   local nodes = this.nodes
   if node then
     if nodes[name] then
-      error(-unix.EEXIST)
+      error(-unix.EEXIST, 0)
     end
   else
     if not nodes[name] then
-      error(-unix.ENOENT)
+      error(-unix.ENOENT, 0)
     end
   end
   nodes[name] = node
@@ -179,10 +179,10 @@ function operations:rmdir(path)
   local parent_node = get(parent_path)
 
   if unix.band(node.attr.st_mode, unix.S_IFDIR) == 0 then
-    error(-unix.ENOTDIR)
+    error(-unix.ENOTDIR, 0)
   end
   if not is_empty_dir(node) then
-    error(-unix.ENOTEMPTY)
+    error(-unix.ENOTEMPTY, 0)
   end
 
   update_current_time()

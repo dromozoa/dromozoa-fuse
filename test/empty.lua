@@ -27,7 +27,7 @@ function operations:getattr(path)
       st_nlink = 2;
     }
   else
-    error(-unix.ENOENT)
+    error(-unix.ENOENT, 0)
   end
 end
 
@@ -40,7 +40,7 @@ function operations:readdir(path, fill)
     fill "."
     fill ".."
   else
-    return -unix.ENOENT
+    error(-unix.ENOENT, 0)
   end
 end
 
