@@ -29,8 +29,12 @@ namespace dromozoa {
     public:
       buffer() {}
 
-      luaX_string_reference read(std::size_t i, std::size_t n) const {
-        std::size_t m = buffer_.size();
+      luaX_string_reference get() const {
+        return luaX_string_reference(buffer_.data(), buffer_.size());
+      }
+
+      luaX_string_reference get(size_t i, size_t n) const {
+        size_t m = buffer_.size();
         if (m <= i) {
           return luaX_string_reference();
         }
@@ -38,13 +42,17 @@ namespace dromozoa {
         return luaX_string_reference(&buffer_[i], std::min(m, n));
       }
 
-      void write(std::size_t i, const luaX_string_reference& buffer) {
-        std::size_t m = buffer_.size();
-        std::size_t n = i + buffer.size();
+      void put(size_t i, const luaX_string_reference& buffer) {
+        size_t m = buffer_.size();
+        size_t n = i + buffer.size();
         if (m < n) {
           buffer_.resize(n);
         }
         memcpy(&buffer_[i], buffer.data(), buffer.size());
+      }
+
+      size_t size() const {
+        return buffer_.size();
       }
 
     private:
@@ -61,23 +69,31 @@ namespace dromozoa {
       check_buffer(L, 1)->~buffer();
     }
 
+    void impl_tostring(lua_State* L) {
+      luaX_push(L, check_buffer(L, 1)->get());
+    }
+
+    void impl_len(lua_State* L) {
+      luaX_push(L, check_buffer(L, 1)->size());
+    }
+
     void impl_call(lua_State* L) {
       luaX_new<buffer>(L);
       luaX_set_metatable(L, "dromozoa.fuse.buffer");
     }
 
-    void impl_read(lua_State* L) {
+    void impl_get(lua_State* L) {
       buffer* self = check_buffer(L, 1);
-      std::size_t i = luaX_check_integer<std::size_t>(L, 2);
-      std::size_t n = luaX_check_integer<std::size_t>(L, 3);
-      luaX_push(L, self->read(i, n));
+      size_t i = luaX_check_integer<size_t>(L, 2);
+      size_t n = luaX_check_integer<size_t>(L, 3);
+      luaX_push(L, self->get(i, n));
     }
 
-    void impl_write(lua_State* L) {
+    void impl_put(lua_State* L) {
       buffer* self = check_buffer(L, 1);
-      std::size_t i = luaX_check_integer<std::size_t>(L, 2);
+      size_t i = luaX_check_integer<size_t>(L, 2);
       luaX_string_reference buffer = luaX_check_string(L, 3);
-      self->write(i, buffer);
+      self->put(i, buffer);
       luaX_push_success(L);
     }
   }
@@ -89,11 +105,13 @@ namespace dromozoa {
       lua_pushvalue(L, -2);
       luaX_set_field(L, -2, "__index");
       luaX_set_field(L, -1, "__gc", impl_gc);
+      luaX_set_field(L, -1, "__len", impl_len);
+      luaX_set_field(L, -1, "__tostring", impl_tostring);
       lua_pop(L, 1);
 
       luaX_set_metafield(L, -1, "__call", impl_call);
-      luaX_set_field(L, -1, "read", impl_read);
-      luaX_set_field(L, -1, "write", impl_write);
+      luaX_set_field(L, -1, "get", impl_get);
+      luaX_set_field(L, -1, "put", impl_put);
     }
     luaX_set_field(L, -2, "buffer");
   }

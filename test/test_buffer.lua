@@ -18,7 +18,11 @@
 local fuse = require "dromozoa.fuse"
 
 local buffer = fuse.buffer()
-buffer:write(0, "foo")
-buffer:write(3, "bar")
-buffer:write(6, "baz")
-assert(buffer:read(0, 9) == "foobarbaz")
+buffer:put(0, "foo")
+buffer:put(3, "bar")
+buffer:put(6, "baz")
+assert(tostring(buffer) == "foobarbaz")
+assert(buffer:get(0, 9) == "foobarbaz")
+assert(buffer:get(3, 9) == "barbaz")
+assert(buffer:get(6, 9) == "baz")
+assert(#buffer == 9)
