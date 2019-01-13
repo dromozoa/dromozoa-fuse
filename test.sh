@@ -19,8 +19,7 @@
 
 mount_point=`pwd`/mount
 
-for i in test/test*.lua
+for i in test/test_*.sh
 do
-  j=`expr "X$i" : 'X\(.*\)\.lua$' `
-  ./test/runner "$i" "$j.sh" "$mount_point" "$@"
+  "./$i" "$@"
 done
