@@ -219,15 +219,20 @@ end
 
 function operations:read(path, size, offset)
   local node = get(path)
-  return node.content:get(offset, size)
+  update_current_time()
+  local result = node.content:get(offset, size)
+  update_atime(node)
+  return result
 end
 
 
 function operations:write(path, buffer, offset)
   local node = get(path)
   local content = node.content
+  update_current_time()
   content:put(offset, buffer)
   node.attr.st_size = #content
+  update_mtime(node)
 end
 
 function operations:statfs(path)
@@ -235,10 +240,12 @@ function operations:statfs(path)
 end
 
 function operations:readdir(path, fill)
-  local this = get(path)
-  for name in pairs(this.nodes) do
+  local node = get(path)
+  update_current_time()
+  for name in pairs(node.nodes) do
     fill(name)
   end
+  update_atime(node)
 end
 
 function operations:create(path, mode)
