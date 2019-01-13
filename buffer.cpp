@@ -55,6 +55,10 @@ namespace dromozoa {
         return buffer_.size();
       }
 
+      void resize(size_t n) {
+        buffer_.resize(n);
+      }
+
     private:
       std::vector<char> buffer_;
       buffer(const buffer&);
@@ -96,6 +100,13 @@ namespace dromozoa {
       self->put(i, buffer);
       luaX_push_success(L);
     }
+
+    void impl_resize(lua_State* L) {
+      buffer* self = check_buffer(L, 1);
+      size_t n = luaX_check_integer<size_t>(L, 2);
+      self->resize(n);
+      luaX_push_success(L);
+    }
   }
 
   void initialize_buffer(lua_State* L) {
@@ -112,6 +123,7 @@ namespace dromozoa {
       luaX_set_metafield(L, -1, "__call", impl_call);
       luaX_set_field(L, -1, "get", impl_get);
       luaX_set_field(L, -1, "put", impl_put);
+      luaX_set_field(L, -1, "resize", impl_resize);
     }
     luaX_set_field(L, -2, "buffer");
   }
