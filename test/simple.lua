@@ -219,24 +219,14 @@ end
 
 function operations:read(path, size, offset)
   local node = get(path)
-  local content = node.content
-  local buffer = {}
-  for i = 1, size do
-    buffer[i] = content[offset + i]
-  end
-  print(("READ %s %d %d %q"):format(path, size, offset, table.concat(buffer)))
-  return table.concat(buffer)
+  return node.content:get(offset, size)
 end
 
 
 function operations:write(path, buffer, offset)
   local node = get(path)
   local content = node.content
-  local n = #buffer
-  for i = 1, n do
-    content[offset + i] = buffer:sub(i, i)
-  end
-  print(("WRITE %s %d %d %q"):format(path, #buffer, offset, table.concat(content)))
+  content:put(offset, buffer)
   node.attr.st_size = #content
 end
 
@@ -264,24 +254,16 @@ function operations:create(path, mode)
       st_mtime = current_time;
       st_ctime = current_time;
       st_blocks = 0;
+      st_size = 0
     };
-    content = {};
+    content = fuse.buffer();
   })
 end
 
 function operations:ftruncate(path, size)
   local node = get(path)
   local content = node.content
-  local n = #content
-  if n < size then
-    for i = n + 1, size do
-      content[i] = "\0"
-    end
-  else
-    for i = size + 1, n do
-      content[i] = nil
-    end
-  end
+  content:resize(size)
   node.attr.st_size = #content
 end
 

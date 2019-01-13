@@ -39,13 +39,13 @@ then
   exit 1
 fi
 
-echo foo >foo/bar/test.txt
-echo bar >>foo/bar/test.txt
-echo baz >>foo/bar/test.txt
+printf foo >foo/bar/test.txt
+printf bar >>foo/bar/test.txt
+printf baz >>foo/bar/test.txt
 case X`cat foo/bar/test.txt` in
-  X) exit 1;;
+  Xfoobarbaz) ;;
+  *) exit 1;;
 esac
-cat foo/bar/test.txt
 
 if test -f foo/bar/test.txt
 then
