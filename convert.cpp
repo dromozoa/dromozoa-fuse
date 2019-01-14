@@ -27,6 +27,7 @@
   that->name = luaX_opt_integer_field(L, index, #name, that->name) \
   /**/
 
+// TODO 変換時の関数適用
 namespace dromozoa {
   namespace {
     bool convert_timespec(lua_State* L, int index, const char* key, struct timespec& tv) {

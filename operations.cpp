@@ -30,6 +30,7 @@
   } while (false) \
   /**/
 
+// TODO 残りのインターフェースの実装
 namespace dromozoa {
   namespace {
     template <class T>

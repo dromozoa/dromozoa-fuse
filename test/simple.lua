@@ -217,6 +217,8 @@ function operations:mkdir(path)
   update_mtime(parent_node)
 end
 
+-- TODO renameを実装
+
 function operations:chmod(path, mode)
   print(path, mode)
   local node = get(path)
