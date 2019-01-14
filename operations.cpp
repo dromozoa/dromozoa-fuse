@@ -220,7 +220,7 @@ namespace dromozoa {
     }
 
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/chmod.2.html
-    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L142
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L141
     int chmod(const char* path, mode_t mode) {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();

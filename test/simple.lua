@@ -217,6 +217,15 @@ function operations:mkdir(path)
   update_mtime(parent_node)
 end
 
+function operations:chmod(path, mode)
+  print(path, mode)
+  local node = get(path)
+  local attr = node.attr
+  update_current_time()
+  attr.st_mode = unix.bor(unix.band(attr.st_mode, unix.S_IFMT), mode)
+  update_ctime(node)
+end
+
 function operations:read(path, size, offset)
   local node = get(path)
   update_current_time()

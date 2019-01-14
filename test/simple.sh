@@ -68,3 +68,12 @@ if test -d foo/bar
 then
   exit 1
 fi
+
+cat <<EOH >test.sh
+#! /bin/sh -e
+echo foo
+echo bar
+echo baz
+EOH
+chmod 755 test.sh
+./test.sh
