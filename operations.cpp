@@ -294,7 +294,9 @@ namespace dromozoa {
           }
           DROMOZOA_UNEXPECTED("must return a string");
         } else {
-          // TODO fix me
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          }
           DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
         }
       }
