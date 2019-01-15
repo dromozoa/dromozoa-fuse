@@ -381,5 +381,23 @@ function operations:ftruncate(path, size)
   node.attr.st_size = #content
 end
 
+function operations:utimens(path, atime, mtime)
+  local node = get(path)
+  local attr = node.attr
+  update_current_time()
+  if not atime or atime.tv_nsec == unix.UTIME_NOW then
+    atime = current_time
+  end
+  if atime.tv_nsec ~= unix.UTIME_OMIT then
+    attr.st_atime = atime
+  end
+  if not mtime or mtime.tv_nsec == unix.UTIME_NOW then
+    mtime = current_time
+  end
+  if mtime.tv_nsec ~= unix.UTIME_NOW then
+    attr.st_mtime = mtime
+  end
+end
+
 local result = fuse.main({ arg[0], ... }, operations)
 assert(result == 0)

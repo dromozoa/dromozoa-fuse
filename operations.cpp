@@ -393,7 +393,7 @@ namespace dromozoa {
     int setxattr(const char* path, const char* name, const char* buffer, size_t size, int flags, uint32_t position) {
 #else
     int setxattr(const char* path, const char* name, const char* buffer, size_t size, int flags) {
-      static const luaX_nil_t position = luaX_nil;
+      static const dromozoa::bind::luaX_nil_t position = luaX_nil;
 #endif
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
@@ -412,7 +412,7 @@ namespace dromozoa {
     int getxattr(const char* path, const char* name, char* buffer, size_t size, uint32_t position) {
 #else
     int getxattr(const char* path, const char* name, char* buffer, size_t size) {
-      static const luaX_nil_t position = luaX_nil;
+      static const dromozoa::bind::luaX_nil_t position = luaX_nil;
 #endif
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
