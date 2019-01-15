@@ -37,6 +37,10 @@ local function mode_file(mode)
   return unix.bor(unix.S_IFREG, tonumber(mode, 8))
 end
 
+local function is_dir(node)
+  return unix.band(node.attr.st_mode, unix.S_IFDIR) ~= 0
+end
+
 local function is_empty_dir(node)
   local m = 0
   local n = 0
@@ -92,6 +96,7 @@ local root = {
     st_ctime = current_time;
     st_blocks = 0;
   };
+  xattr = {};
   nodes = {
     [".."] = true;
   };
@@ -155,6 +160,39 @@ local function link(oldpath, newpath)
   set(newpath, increment_link(get(oldpath)))
 end
 
+local function unlink(path)
+  local node = get(path)
+  local parent_path = split(path)
+  local parent_node = get(parent_path)
+  set(path)
+  decrement_link(node)
+  update_mtime(parent_node)
+  return node
+end
+
+local function rmdir(path)
+  local node = get(path)
+  local parent_path = split(path)
+  local parent_node = get(parent_path)
+  set(path .. "/..")
+  set(path .. "/.")
+  set(path)
+  decrement_link(node)
+  decrement_link(node)
+  decrement_link(parent_node)
+  update_mtime(parent_node)
+  return node
+end
+
+local function mkdir(path, node)
+  local parent_path = split(path)
+  local parent_node = get(parent_path)
+  set(path, node)
+  link(parent_path, path .. "/..")
+  link(path, path .. "/.")
+  update_mtime(parent_node)
+end
+
 link("/", "/.")
 
 local operations = {}
@@ -164,21 +202,14 @@ function operations:getattr(path)
 end
 
 function operations:unlink(path)
-  local node = get(path)
-  local parent_path, name = split(path)
-  local parent_node = get(parent_path)
   update_current_time()
-  set(path)
-  decrement_link(node)
-  update_mtime(parent_node)
+  unlink(path)
 end
 
 function operations:rmdir(path)
   local node = get(path)
-  local parent_path, name = split(path)
-  local parent_node = get(parent_path)
 
-  if unix.band(node.attr.st_mode, unix.S_IFDIR) == 0 then
+  if not is_dir(node) then
     error(-unix.ENOTDIR, 0)
   end
   if not is_empty_dir(node) then
@@ -186,20 +217,12 @@ function operations:rmdir(path)
   end
 
   update_current_time()
-  set(path .. "/..")
-  set(path .. "/.")
-  set(path)
-  decrement_link(node)
-  decrement_link(node)
-  decrement_link(parent_node)
-  update_mtime(parent_node)
+  rmdir(path)
 end
 
 function operations:mkdir(path)
-  local parent_path, name = split(path)
-  local parent_node = get(parent_path)
   update_current_time()
-  set(path, {
+  mkdir(path, {
     attr = {
       st_mode = mode_dir "0755";
       st_nlink = 1;
@@ -210,15 +233,45 @@ function operations:mkdir(path)
       st_ctime = current_time;
       st_blocks = 0;
     };
+    xattr = {};
     nodes = {};
   })
-  link(parent_path, path .. "/..")
-  link(path, path .. "/.")
-  update_mtime(parent_node)
+end
+
+function operations:rename(oldpath, newpath)
+  local old_node = get(oldpath)
+  local parent_path, name = split(newpath)
+  local parent_node = get(parent_path)
+  local node = parent_node.nodes[name]
+
+  update_current_time()
+  if is_dir(old_node) then
+    if node then
+      if not is_dir(node) then
+        error(-unix.ENOTDIR, 0)
+      end
+      if not is_empty_dir(node) then
+        error(-unix.ENOTEMPTY, 0)
+      end
+      rmdir(newpath)
+    end
+    rmdir(oldpath)
+    increment_link(old_node)
+    mkdir(newpath, old_node)
+  else
+    if node then
+      if is_dir(node) then
+        error(-unix.EISDIR, 0)
+      end
+      unlink(newpath)
+    end
+    unlink(oldpath)
+    increment_link(old_node)
+    set(newpath, old_node)
+  end
 end
 
 function operations:chmod(path, mode)
-  print(path, mode)
   local node = get(path)
   local attr = node.attr
   update_current_time()
@@ -234,7 +287,6 @@ function operations:read(path, size, offset)
   return result
 end
 
-
 function operations:write(path, buffer, offset)
   local node = get(path)
   local content = node.content
@@ -246,6 +298,51 @@ end
 
 function operations:statfs(path)
   return vfs
+end
+
+function operations:setxattr(path, name, value, position)
+  local node = get(path)
+  update_current_time()
+  node.xattr[name] = value
+  update_ctime(node)
+end
+
+function operations:getxattr(path, name, size, position)
+  local node = get(path)
+  local value = node.xattr[name]
+  if not value then
+    error(-unix.ENODATA, 0)
+  end
+  if size == 0 then
+    return #value
+  else
+    return value
+  end
+end
+
+function operations:listxattr(path, size)
+  local node = get(path)
+  local names = {}
+  for name in pairs(node.xattr) do
+    names[#names + 1] = name .. "\0"
+  end
+  local result = table.concat(names)
+  if size == 0 then
+    return #result
+  else
+    return result
+  end
+end
+
+function operations:removexattr(path, name)
+  local node = get(path)
+  local xattr = node.xattr
+  if not xattr[name] then
+    error(-unix.ENODATA, 0)
+  end
+  update_current_time()
+  xattr[name] = nil
+  update_ctime(node)
 end
 
 function operations:readdir(path, fill)
@@ -272,6 +369,7 @@ function operations:create(path, mode)
       st_blocks = 0;
       st_size = 0
     };
+    xattr = {};
     content = fuse.buffer();
   })
 end
