@@ -96,6 +96,7 @@ local root = {
     st_ctime = current_time;
     st_blocks = 0;
   };
+  xattr = {};
   nodes = {
     [".."] = true;
   };
@@ -232,6 +233,7 @@ function operations:mkdir(path)
       st_ctime = current_time;
       st_blocks = 0;
     };
+    xattr = {};
     nodes = {};
   })
 end
@@ -298,7 +300,50 @@ function operations:statfs(path)
   return vfs
 end
 
--- TODO 拡張属性を実装
+function operations:setxattr(path, name, value, position)
+  local node = get(path)
+  update_current_time()
+  node.xattr[name] = value
+  update_ctime(node)
+end
+
+function operations:getxattr(path, name, size, position)
+  local node = get(path)
+  local value = node.xattr[name]
+  if not value then
+    error(-unix.ENODATA, 0)
+  end
+  if size == 0 then
+    return #value
+  else
+    return value
+  end
+end
+
+function operations:listxattr(path, size)
+  local node = get(path)
+  local names = {}
+  for name in pairs(node.xattr) do
+    names[#names + 1] = name .. "\0"
+  end
+  local result = table.concat(names)
+  if size == 0 then
+    return #result
+  else
+    return result
+  end
+end
+
+function operations:removexattr(path, name)
+  local node = get(path)
+  local xattr = node.xattr
+  if not xattr[name] then
+    error(-unix.ENODATA, 0)
+  end
+  update_current_time()
+  xattr[name] = nil
+  update_ctime(node)
+end
 
 function operations:readdir(path, fill)
   local node = get(path)
@@ -324,6 +369,7 @@ function operations:create(path, mode)
       st_blocks = 0;
       st_size = 0
     };
+    xattr = {};
     content = fuse.buffer();
   })
 end

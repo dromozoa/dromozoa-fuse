@@ -98,3 +98,28 @@ then
 else
   exit 1
 fi
+
+if xattr >/dev/null 2>&1
+then
+  touch attr.txt
+  xattr -l attr.txt
+  xattr -w dromozoa.foo 17 attr.txt
+  xattr -w dromozoa.bar 42 attr.txt
+  xattr -l attr.txt
+  xattr -p dromozoa.foo attr.txt
+  xattr -p dromozoa.bar attr.txt
+  if xattr -p dromozoa.baz attr.txt
+  then
+    exit 1
+  fi
+  xattr -d dromozoa.bar attr.txt
+  xattr -l attr.txt
+  xattr -p dromozoa.foo attr.txt
+  if xattr -p dromozoa.bar attr.txt
+  then
+    exit 1
+  fi
+elif attr / >/dev/null 2>&1
+then
+  :
+fi
