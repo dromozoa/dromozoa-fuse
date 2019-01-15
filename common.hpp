@@ -31,18 +31,22 @@
 #include <fuse.h>
 #endif
 
+#include <pthread.h>
+
 #include <dromozoa/bind.hpp>
 
 namespace dromozoa {
   class operations {
   public:
     operations(lua_State*, int);
+    ~operations();
     fuse_operations* get();
     lua_State* state() const;
     bool prepare(lua_State*, const char*) const;
   private:
     fuse_operations ops_;
     luaX_reference<> ref_;
+    pthread_mutex_t mutex_;
     operations(const operations&);
     operations& operator=(const operations&);
     bool check(lua_State*, const char*) const;
