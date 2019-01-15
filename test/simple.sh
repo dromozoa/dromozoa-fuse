@@ -77,3 +77,24 @@ echo baz
 EOH
 chmod 755 test.sh
 ./test.sh
+
+mkdir -p foo/bar/baz
+echo 17 >foo/bar/baz/test.txt
+echo 42 >test.txt
+case X`cat test.txt` in
+  X42) ;;
+  *) exit 1;;
+esac
+mv foo/bar/baz/test.txt .
+case X`cat test.txt` in
+  X17) ;;
+  *) exit 1;;
+esac
+
+mv foo/bar .
+if test -d bar
+then
+  :
+else
+  exit 1
+fi
