@@ -20,6 +20,7 @@
 #include <vector>
 #include <string>
 
+// TODO マルチスレッド実装
 namespace dromozoa {
   namespace {
     void impl_main(lua_State* L) {

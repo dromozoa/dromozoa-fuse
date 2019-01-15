@@ -56,8 +56,9 @@ namespace dromozoa {
       scoped_converter& operator=(const scoped_converter&);
     };
 
-    typedef scoped_converter<struct fuse_conn_info> conn_info;
-    typedef scoped_converter<struct fuse_file_info> file_info;
+    typedef scoped_converter<struct fuse_conn_info> conn_info_t;
+    typedef scoped_converter<struct fuse_file_info> file_info_t;
+    typedef scoped_converter<struct flock> flock_t;
 
     int call(lua_State* L, int nargs, int d = 0) {
       if (lua_pcall(L, nargs, 1, 0) == 0) {
@@ -220,7 +221,7 @@ namespace dromozoa {
     }
 
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/chmod.2.html
-    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L142
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L141
     int chmod(const char* path, mode_t mode) {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
@@ -264,7 +265,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "open")) {
         luaX_push(L, path);
         lua_pushvalue(L, info.index());
@@ -279,7 +280,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "read")) {
         luaX_push(L, path, size, offset);
         lua_pushvalue(L, info.index());
@@ -293,6 +294,9 @@ namespace dromozoa {
           }
           DROMOZOA_UNEXPECTED("must return a string");
         } else {
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          }
           DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
         }
       }
@@ -305,7 +309,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "write")) {
         luaX_push(L, path, luaX_string_reference(buffer, size), offset);
         lua_pushvalue(L, info.index());
@@ -344,7 +348,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "flush")) {
         luaX_push(L, path);
         lua_pushvalue(L, info.index());
@@ -358,7 +362,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "release")) {
         luaX_push(L, path);
         lua_pushvalue(L, info.index());
@@ -373,11 +377,109 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "fsync")) {
         luaX_push(L, path, datasync);
         lua_pushvalue(L, info.index());
         return call(L, 4);
+      }
+      return -ENOSYS;
+    }
+
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/setxattr.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L259
+    // https://github.com/osxfuse/fuse/blob/master/example/fusexmp_fh.c#L788
+#ifdef HAVE_OSXFUSE_FUSE_H
+    int setxattr(const char* path, const char* name, const char* buffer, size_t size, int flags, uint32_t position) {
+#else
+    int setxattr(const char* path, const char* name, const char* buffer, size_t size, int flags) {
+      static const dromozoa::bind::luaX_nil_t position = luaX_nil;
+#endif
+      operations* self = static_cast<operations*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      if (self->prepare(L, "setxattr")) {
+        luaX_push(L, path, name, luaX_string_reference(buffer, size), flags, position);
+        return call(L, 6);
+      }
+      return -ENOSYS;
+    }
+
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/getxattr.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L263
+    // https://github.com/osxfuse/fuse/blob/master/example/fusexmp_fh.c#L817
+#ifdef HAVE_OSXFUSE_FUSE_H
+    int getxattr(const char* path, const char* name, char* buffer, size_t size, uint32_t position) {
+#else
+    int getxattr(const char* path, const char* name, char* buffer, size_t size) {
+      static const dromozoa::bind::luaX_nil_t position = luaX_nil;
+#endif
+      operations* self = static_cast<operations*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      if (self->prepare(L, "getxattr")) {
+        luaX_push(L, path, name, size, position);
+        if (lua_pcall(L, 5, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          } else if (luaX_string_reference result = luaX_to_string(L, -1)) {
+            if (result.size() > size) {
+              return -ERANGE;
+            }
+            memset(buffer, 0, size);
+            memcpy(buffer, result.data(), result.size());
+            return result.size();
+          }
+          DROMOZOA_UNEXPECTED("must return a string");
+        } else {
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          }
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
+      return -ENOSYS;
+    }
+
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/listxattr.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L265
+    int listxattr(const char* path, char* buffer, size_t size) {
+      operations* self = static_cast<operations*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      if (self->prepare(L, "listxattr")) {
+        luaX_push(L, path, size);
+        if (lua_pcall(L, 3, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          } else if (luaX_string_reference result = luaX_to_string(L, -1)) {
+            if (result.size() > size) {
+              return -ERANGE;
+            }
+            memset(buffer, 0, size);
+            memcpy(buffer, result.data(), result.size());
+            return result.size();
+          }
+          DROMOZOA_UNEXPECTED("must return a string");
+        } else {
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          }
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
+      return -ENOSYS;
+    }
+
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/removexattr.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L268
+    int removexattr(const char* path, const char* name) {
+      operations* self = static_cast<operations*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      if (self->prepare(L, "removexattr")) {
+        luaX_push(L, path, name);
+        return call(L, 3);
       }
       return -ENOSYS;
     }
@@ -387,7 +489,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "opendir")) {
         luaX_push(L, path);
         lua_pushvalue(L, info.index());
@@ -401,7 +503,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "readdir")) {
         luaX_push(L, path);
         scoped_handle scope(new_fill_dir(L, function, buffer));
@@ -417,7 +519,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "releasedir")) {
         luaX_push(L, path);
         lua_pushvalue(L, info.index());
@@ -431,7 +533,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "fsyncdir")) {
         luaX_push(L, path, datasync);
         lua_pushvalue(L, info.index());
@@ -445,7 +547,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      conn_info info(L, info_ptr);
+      conn_info_t info(L, info_ptr);
       if (self->prepare(L, "init")) {
         lua_pushvalue(L, info.index());
         if (lua_pcall(L, 2, 0, 0) != 0) {
@@ -485,7 +587,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "create")) {
         luaX_push(L, path, mode);
         lua_pushvalue(L, info.index());
@@ -500,7 +602,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "ftruncate")) {
         luaX_push(L, path, size);
         lua_pushvalue(L, info.index());
@@ -515,7 +617,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "fgetattr")) {
         luaX_push(L, path);
         lua_pushvalue(L, info.index());
@@ -536,6 +638,24 @@ namespace dromozoa {
       return -ENOSYS;
     }
 
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/fcntl.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L398
+    int lock(const char* path, struct fuse_file_info* info_ptr, int command, struct flock* lock_ptr) {
+      operations* self = static_cast<operations*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      file_info_t info(L, info_ptr);
+      flock_t lock(L, lock_ptr);
+      if (self->prepare(L, "lock")) {
+        luaX_push(L, path);
+        lua_pushvalue(L, info.index());
+        luaX_push(L, command);
+        lua_pushvalue(L, lock.index());
+        return call(L, 5);
+      }
+      return -ENOSYS;
+    }
+
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/utimensat.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L433
     int utimens(const char* path, const struct timespec times[2]) {
@@ -551,6 +671,37 @@ namespace dromozoa {
           luaX_push(L, luaX_nil, luaX_nil);
         }
         return call(L, 4);
+      }
+      return -ENOSYS;
+    }
+
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/flock.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L557
+    int flock(const char* path, struct fuse_file_info* info_ptr, int operation) {
+      operations* self = static_cast<operations*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      file_info_t info(L, info_ptr);
+      if (self->prepare(L, "lock")) {
+        luaX_push(L, path);
+        lua_pushvalue(L, info.index());
+        luaX_push(L, operation);
+        return call(L, 4);
+      }
+      return -ENOSYS;
+    }
+
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/fallocate.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L370
+    int fallocate(const char* path, int mode, off_t offset, off_t size, struct fuse_file_info* info_ptr) {
+      operations* self = static_cast<operations*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      file_info_t info(L, info_ptr);
+      if (self->prepare(L, "fallocate")) {
+        luaX_push(L, path, mode, offset, size);
+        lua_pushvalue(L, info.index());
+        return call(L, 6);
       }
       return -ENOSYS;
     }
@@ -581,6 +732,10 @@ namespace dromozoa {
     DROMOZOA_SET_OPERATION(flush);
     DROMOZOA_SET_OPERATION(release);
     DROMOZOA_SET_OPERATION(fsync);
+    DROMOZOA_SET_OPERATION(setxattr);
+    DROMOZOA_SET_OPERATION(getxattr);
+    DROMOZOA_SET_OPERATION(listxattr);
+    DROMOZOA_SET_OPERATION(removexattr);
     DROMOZOA_SET_OPERATION(opendir);
     DROMOZOA_SET_OPERATION(readdir);
     DROMOZOA_SET_OPERATION(releasedir);
@@ -589,7 +744,10 @@ namespace dromozoa {
     DROMOZOA_SET_OPERATION(create);
     DROMOZOA_SET_OPERATION(ftruncate);
     DROMOZOA_SET_OPERATION(fgetattr);
+    DROMOZOA_SET_OPERATION(lock);
     DROMOZOA_SET_OPERATION(utimens);
+    DROMOZOA_SET_OPERATION(flock);
+    DROMOZOA_SET_OPERATION(fallocate);
   }
 
   fuse_operations* operations::get() {
