@@ -54,6 +54,13 @@ else
   exit 1
 fi
 
+size=`wc -c <foo/bar/test.txt`
+size=`expr "X$size" : 'X *\([0-9][0-9]*\)$'`
+case X$size in
+  X9) ;;
+  *) exit 1;;
+esac
+
 rm foo/bar/test.txt
 
 if test -f foo/bar/test.txt
