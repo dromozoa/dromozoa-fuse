@@ -41,10 +41,11 @@ namespace dromozoa {
     fuse_operations* get();
     lua_State* state() const;
     bool prepare(lua_State*, const char*) const;
+    dromozoa::mutex& mutex();
   private:
     fuse_operations ops_;
     luaX_reference<> ref_;
-    mutex mutex_;
+    dromozoa::mutex mutex_;
     operations(const operations&);
     operations& operator=(const operations&);
     bool check(lua_State*, const char*) const;

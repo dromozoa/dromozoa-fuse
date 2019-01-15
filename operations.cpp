@@ -767,6 +767,10 @@ namespace dromozoa {
     }
   }
 
+  dromozoa::mutex& operations::mutex() {
+    return mutex_;
+  }
+
   bool operations::check(lua_State* L, const char* name) const {
     luaX_top_saver save(L);
     return ref_.get_field(L) != LUA_TNIL && luaX_get_field(L, -1, name) != LUA_TNIL;
