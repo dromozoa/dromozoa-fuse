@@ -675,6 +675,22 @@ namespace dromozoa {
       }
       return -ENOSYS;
     }
+
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/flock.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L557
+    int flock(const char* path, struct fuse_file_info* info_ptr, int operation) {
+      operations* self = static_cast<operations*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      file_info_t info(L, info_ptr);
+      if (self->prepare(L, "lock")) {
+        luaX_push(L, path);
+        lua_pushvalue(L, info.index());
+        luaX_push(L, operation);
+        return call(L, 4);
+      }
+      return -ENOSYS;
+    }
   }
 
   operations::operations(lua_State* L, int index)
@@ -716,6 +732,7 @@ namespace dromozoa {
     DROMOZOA_SET_OPERATION(fgetattr);
     DROMOZOA_SET_OPERATION(lock);
     DROMOZOA_SET_OPERATION(utimens);
+    DROMOZOA_SET_OPERATION(flock);
   }
 
   fuse_operations* operations::get() {
