@@ -57,8 +57,8 @@ namespace dromozoa {
       scoped_converter& operator=(const scoped_converter&);
     };
 
-    typedef scoped_converter<struct fuse_conn_info> conn_info;
-    typedef scoped_converter<struct fuse_file_info> file_info;
+    typedef scoped_converter<struct fuse_conn_info> conn_info_t;
+    typedef scoped_converter<struct fuse_file_info> file_info_t;
     typedef scoped_converter<struct flock> flock_t;
 
     int call(lua_State* L, int nargs, int d = 0) {
@@ -266,7 +266,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "open")) {
         luaX_push(L, path);
         lua_pushvalue(L, info.index());
@@ -281,7 +281,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "read")) {
         luaX_push(L, path, size, offset);
         lua_pushvalue(L, info.index());
@@ -310,7 +310,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "write")) {
         luaX_push(L, path, luaX_string_reference(buffer, size), offset);
         lua_pushvalue(L, info.index());
@@ -349,7 +349,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "flush")) {
         luaX_push(L, path);
         lua_pushvalue(L, info.index());
@@ -363,7 +363,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "release")) {
         luaX_push(L, path);
         lua_pushvalue(L, info.index());
@@ -378,7 +378,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "fsync")) {
         luaX_push(L, path, datasync);
         lua_pushvalue(L, info.index());
@@ -490,7 +490,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "opendir")) {
         luaX_push(L, path);
         lua_pushvalue(L, info.index());
@@ -504,7 +504,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "readdir")) {
         luaX_push(L, path);
         scoped_handle scope(new_fill_dir(L, function, buffer));
@@ -520,7 +520,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "releasedir")) {
         luaX_push(L, path);
         lua_pushvalue(L, info.index());
@@ -534,7 +534,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "fsyncdir")) {
         luaX_push(L, path, datasync);
         lua_pushvalue(L, info.index());
@@ -548,7 +548,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      conn_info info(L, info_ptr);
+      conn_info_t info(L, info_ptr);
       if (self->prepare(L, "init")) {
         lua_pushvalue(L, info.index());
         if (lua_pcall(L, 2, 0, 0) != 0) {
@@ -588,7 +588,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "create")) {
         luaX_push(L, path, mode);
         lua_pushvalue(L, info.index());
@@ -603,7 +603,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "ftruncate")) {
         luaX_push(L, path, size);
         lua_pushvalue(L, info.index());
@@ -618,7 +618,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       if (self->prepare(L, "fgetattr")) {
         luaX_push(L, path);
         lua_pushvalue(L, info.index());
@@ -645,7 +645,7 @@ namespace dromozoa {
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
-      file_info info(L, info_ptr);
+      file_info_t info(L, info_ptr);
       flock_t lock(L, lock_ptr);
       if (self->prepare(L, "lock")) {
         luaX_push(L, path);
