@@ -59,6 +59,7 @@ namespace dromozoa {
 
     typedef scoped_converter<struct fuse_conn_info> conn_info;
     typedef scoped_converter<struct fuse_file_info> file_info;
+    typedef scoped_converter<struct flock> flock_t;
 
     int call(lua_State* L, int nargs, int d = 0) {
       if (lua_pcall(L, nargs, 1, 0) == 0) {
@@ -638,6 +639,24 @@ namespace dromozoa {
       return -ENOSYS;
     }
 
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/fcntl.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L398
+    int lock(const char* path, struct fuse_file_info* info_ptr, int command, struct flock* lock_ptr) {
+      operations* self = static_cast<operations*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      file_info info(L, info_ptr);
+      flock_t lock(L, lock_ptr);
+      if (self->prepare(L, "lock")) {
+        luaX_push(L, path);
+        lua_pushvalue(L, info.index());
+        luaX_push(L, command);
+        lua_pushvalue(L, lock.index());
+        return call(L, 5);
+      }
+      return -ENOSYS;
+    }
+
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/utimensat.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L433
     int utimens(const char* path, const struct timespec times[2]) {
@@ -695,6 +714,7 @@ namespace dromozoa {
     DROMOZOA_SET_OPERATION(create);
     DROMOZOA_SET_OPERATION(ftruncate);
     DROMOZOA_SET_OPERATION(fgetattr);
+    DROMOZOA_SET_OPERATION(lock);
     DROMOZOA_SET_OPERATION(utimens);
   }
 

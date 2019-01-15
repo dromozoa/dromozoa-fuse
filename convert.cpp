@@ -108,6 +108,20 @@ namespace dromozoa {
     return index;
   }
 
+  // http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/fcntl.h.html
+  // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/fcntl.2.html
+  // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L398
+  int convert(lua_State* L, const struct flock* that) {
+    lua_newtable(L);
+    int index = lua_gettop(L);
+    DROMOZOA_SET_FIELD(l_type);
+    DROMOZOA_SET_FIELD(l_whence);
+    DROMOZOA_SET_FIELD(l_start);
+    DROMOZOA_SET_FIELD(l_len);
+    DROMOZOA_SET_FIELD(l_pid);
+    return index;
+  }
+
   // http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/time.h.html
   // http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/sys_stat.h.html
   // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/utimensat.2.html
@@ -150,6 +164,22 @@ namespace dromozoa {
       DROMOZOA_OPT_FIELD(flock_release);
       DROMOZOA_OPT_FIELD(fh);
       DROMOZOA_OPT_FIELD(lock_owner);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  // http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/fcntl.h.html
+  // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/fcntl.2.html
+  // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L398
+  bool convert(lua_State* L, int index, struct flock* that) {
+    if (lua_istable(L, index)) {
+      DROMOZOA_OPT_FIELD(l_type);
+      DROMOZOA_OPT_FIELD(l_whence);
+      DROMOZOA_OPT_FIELD(l_start);
+      DROMOZOA_OPT_FIELD(l_len);
+      DROMOZOA_OPT_FIELD(l_pid);
       return true;
     } else {
       return false;
