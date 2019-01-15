@@ -390,16 +390,16 @@ namespace dromozoa {
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L259
     // https://github.com/osxfuse/fuse/blob/master/example/fusexmp_fh.c#L788
 #ifdef HAVE_OSXFUSE_FUSE_H
-    int setxattr(const char* path, const char* name, const char* value, size_t size, int flags, uint32_t position) {
+    int setxattr(const char* path, const char* name, const char* buffer, size_t size, int flags, uint32_t position) {
 #else
-    int setxattr(const char* path, const char* name, const char* value, size_t size, int flags) {
+    int setxattr(const char* path, const char* name, const char* buffer, size_t size, int flags) {
       static const luaX_nil_t position = luaX_nil;
 #endif
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       lua_State* L = self->state();
       luaX_top_saver save(L);
       if (self->prepare(L, "setxattr")) {
-        luaX_push(L, path, name, luaX_string_reference(value, size), flags, position);
+        luaX_push(L, path, name, luaX_string_reference(buffer, size), flags, position);
         return call(L, 6);
       }
       return -ENOSYS;
@@ -409,9 +409,9 @@ namespace dromozoa {
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L263
     // https://github.com/osxfuse/fuse/blob/master/example/fusexmp_fh.c#L817
 #ifdef HAVE_OSXFUSE_FUSE_H
-    int getxattr(const char* path, const char* name, char* value, size_t size, uint32_t position) {
+    int getxattr(const char* path, const char* name, char* buffer, size_t size, uint32_t position) {
 #else
-    int getxattr(const char* path, const char* name, char* value, size_t size) {
+    int getxattr(const char* path, const char* name, char* buffer, size_t size) {
       static const luaX_nil_t position = luaX_nil;
 #endif
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
@@ -426,8 +426,8 @@ namespace dromozoa {
             if (result.size() > size) {
               return -ERANGE;
             }
-            memset(value, 0, size);
-            memcpy(value, result.data(), result.size());
+            memset(buffer, 0, size);
+            memcpy(buffer, result.data(), result.size());
             return result.size();
           }
           DROMOZOA_UNEXPECTED("must return a string");
@@ -437,6 +437,49 @@ namespace dromozoa {
           }
           DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
         }
+      }
+      return -ENOSYS;
+    }
+
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/listxattr.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L265
+    int listxattr(const char* path, char* buffer, size_t size) {
+      operations* self = static_cast<operations*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      if (self->prepare(L, "listxattr")) {
+        luaX_push(L, path, size);
+        if (lua_pcall(L, 3, 1, 0) == 0) {
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          } else if (luaX_string_reference result = luaX_to_string(L, -1)) {
+            if (result.size() > size) {
+              return -ERANGE;
+            }
+            memset(buffer, 0, size);
+            memcpy(buffer, result.data(), result.size());
+            return result.size();
+          }
+          DROMOZOA_UNEXPECTED("must return a string");
+        } else {
+          if (luaX_is_integer(L, -1)) {
+            return lua_tointeger(L, -1);
+          }
+          DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+        }
+      }
+      return -ENOSYS;
+    }
+
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/removexattr.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L268
+    int removexattr(const char* path, const char* name) {
+      operations* self = static_cast<operations*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      if (self->prepare(L, "removexattr")) {
+        luaX_push(L, path, name);
+        return call(L, 3);
       }
       return -ENOSYS;
     }
@@ -642,6 +685,8 @@ namespace dromozoa {
     DROMOZOA_SET_OPERATION(fsync);
     DROMOZOA_SET_OPERATION(setxattr);
     DROMOZOA_SET_OPERATION(getxattr);
+    DROMOZOA_SET_OPERATION(listxattr);
+    DROMOZOA_SET_OPERATION(removexattr);
     DROMOZOA_SET_OPERATION(opendir);
     DROMOZOA_SET_OPERATION(readdir);
     DROMOZOA_SET_OPERATION(releasedir);

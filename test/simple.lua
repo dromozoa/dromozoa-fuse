@@ -236,7 +236,6 @@ function operations:read(path, size, offset)
   return result
 end
 
-
 function operations:write(path, buffer, offset)
   local node = get(path)
   local content = node.content
@@ -249,6 +248,8 @@ end
 function operations:statfs(path)
   return vfs
 end
+
+-- TODO 拡張属性を実装
 
 function operations:readdir(path, fill)
   local node = get(path)
