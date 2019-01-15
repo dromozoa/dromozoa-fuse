@@ -32,18 +32,6 @@
 
 namespace dromozoa {
   namespace {
-    void construct_mutex(pthread_mutex_t& mutex) {
-      pthread_mutexattr_t attr;
-      pthread_mutexattr_init(&attr);
-      pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
-      pthread_mutex_init(&mutex, &attr);
-      pthread_mutexattr_destroy(&attr);
-    }
-
-    void destruct_mutex(pthread_mutex_t& mutex) {
-      pthread_mutex_destroy(&mutex);
-    }
-
     template <class T>
     class scoped_converter {
     public:
@@ -721,11 +709,7 @@ namespace dromozoa {
 
   operations::operations(lua_State* L, int index)
     : ops_(),
-      ref_(L, index),
-      mutex_() {
-
-    construct_mutex(mutex_);
-
+      ref_(L, index) {
     ops_.init = init;
     ops_.destroy = destroy;
 
@@ -764,10 +748,6 @@ namespace dromozoa {
     DROMOZOA_SET_OPERATION(utimens);
     DROMOZOA_SET_OPERATION(flock);
     DROMOZOA_SET_OPERATION(fallocate);
-  }
-
-  operations::~operations() {
-    destruct_mutex(mutex_);
   }
 
   fuse_operations* operations::get() {
