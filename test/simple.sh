@@ -101,7 +101,7 @@ fi
 
 if xattr >/dev/null 2>&1
 then
-  touch attr.txt
+  echo attr >attr.txt
   xattr -l attr.txt
   xattr -w dromozoa.foo 17 attr.txt
   xattr -w dromozoa.bar 42 attr.txt
@@ -119,7 +119,27 @@ then
   then
     exit 1
   fi
-elif attr / >/dev/null 2>&1
+elif attr -l / >/dev/null 2>&1
 then
-  :
+  echo attr >attr.txt
+  attr -l attr.txt
+  attr -s dromozoa.foo -V 17 attr.txt
+  attr -s dromozoa.bar -V 42 attr.txt
+  attr -l attr.txt
+  attr -g dromozoa.foo attr.txt
+  attr -g dromozoa.bar attr.txt
+  if attr -g dromozoa.baz attr.txt
+  then
+    exit 1
+  fi
+  attr -r dromozoa.bar attr.txt
+  attr -l attr.txt
+  attr -g dromozoa.foo attr.txt
+  if attr -g dromozoa.bar attr.txt
+  then
+    exit 1
+  fi
 fi
+
+touch touch.txt
+touch touch.txt
