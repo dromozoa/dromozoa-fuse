@@ -691,6 +691,21 @@ namespace dromozoa {
       }
       return -ENOSYS;
     }
+
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/fallocate.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L370
+    int fallocate(const char* path, int mode, off_t offset, off_t size, struct fuse_file_info* info_ptr) {
+      operations* self = static_cast<operations*>(fuse_get_context()->private_data);
+      lua_State* L = self->state();
+      luaX_top_saver save(L);
+      file_info_t info(L, info_ptr);
+      if (self->prepare(L, "fallocate")) {
+        luaX_push(L, path, mode, offset, size);
+        lua_pushvalue(L, info.index());
+        return call(L, 6);
+      }
+      return -ENOSYS;
+    }
   }
 
   operations::operations(lua_State* L, int index)
@@ -733,6 +748,7 @@ namespace dromozoa {
     DROMOZOA_SET_OPERATION(lock);
     DROMOZOA_SET_OPERATION(utimens);
     DROMOZOA_SET_OPERATION(flock);
+    DROMOZOA_SET_OPERATION(fallocate);
   }
 
   fuse_operations* operations::get() {
