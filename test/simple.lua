@@ -357,8 +357,9 @@ end
 function operations:create(path, mode)
   local parent_path, name = split(path)
   update_current_time()
+  local content = fuse.buffer();
   set(path, {
-    attr = {
+    attr = setmetatable({
       st_mode = mode_file "0644";
       st_nlink = 1;
       st_uid = uid;
@@ -367,10 +368,15 @@ function operations:create(path, mode)
       st_mtime = current_time;
       st_ctime = current_time;
       st_blocks = 0;
-      st_size = 0
-    };
+    }, {
+      __index = function (_, key)
+        if key == "st_size" then
+          return #content
+        end
+      end;
+    });
     xattr = {};
-    content = fuse.buffer();
+    content = content;
   })
 end
 

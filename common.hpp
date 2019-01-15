@@ -32,6 +32,7 @@
 #endif
 
 #include <dromozoa/bind.hpp>
+#include <dromozoa/bind/mutex.hpp>
 
 namespace dromozoa {
   class operations {
@@ -40,9 +41,11 @@ namespace dromozoa {
     fuse_operations* get();
     lua_State* state() const;
     bool prepare(lua_State*, const char*) const;
+    dromozoa::mutex& mutex();
   private:
     fuse_operations ops_;
     luaX_reference<> ref_;
+    dromozoa::mutex mutex_;
     operations(const operations&);
     operations& operator=(const operations&);
     bool check(lua_State*, const char*) const;
