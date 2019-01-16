@@ -31,6 +31,8 @@
 #include <fuse.h>
 #endif
 
+#include <list>
+
 #include <dromozoa/bind.hpp>
 #include <dromozoa/bind/mutex.hpp>
 
@@ -49,6 +51,21 @@ namespace dromozoa {
     operations(const operations&);
     operations& operator=(const operations&);
     bool check(lua_State*, const char*) const;
+  };
+
+  class state_pool {
+  public:
+    state_pool(size_t start_states, size_t max_spare_states, const std::string&);
+    ~state_pool();
+    lua_State* open();
+    void close(lua_State*);
+  private:
+    size_t max_spare_states_;
+    std::string chunk_;
+    mutex mutex_;
+    std::list<lua_State*> pool_;
+    state_pool(const state_pool&);
+    state_pool& operator=(const state_pool&);
   };
 
   class handle {

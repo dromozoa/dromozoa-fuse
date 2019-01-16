@@ -45,4 +45,5 @@ fuse_la_SOURCES = \
 	handle.cpp \
 	main.cpp \
 	module.cpp \
-	operations.cpp
+	operations.cpp \
+	state_pool.cpp
