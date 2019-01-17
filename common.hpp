@@ -37,6 +37,25 @@
 #include <dromozoa/bind/mutex.hpp>
 
 namespace dromozoa {
+  class state_manager {
+  public:
+    virtual ~state_manager() = 0;
+    virtual lua_State* open() = 0;
+    virtual void close(lua_State*) = 0;
+  };
+
+  class managed_state {
+  public:
+    managed_state(state_manager*);
+    ~managed_state();
+    lua_State* get() const;
+  private:
+    state_manager* manager_;
+    lua_State* state_;
+    managed_state(const managed_state&);
+    managed_state& operator=(const managed_state&);
+  };
+
   class operations {
   public:
     operations(lua_State*, int);
