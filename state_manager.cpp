@@ -1,4 +1,4 @@
-// Copyright (C) 2018,2019 Tomoyuki Fujimori <moyu@dromozoa.com>
+// Copyright (C) 2019 Tomoyuki Fujimori <moyu@dromozoa.com>
 //
 // This file is part of dromozoa-fuse.
 //
@@ -18,21 +18,15 @@
 #include "common.hpp"
 
 namespace dromozoa {
-  void initialize_buffer(lua_State*);
-  void initialize_fill_dir(lua_State*);
-  void initialize_main(lua_State*);
-  void initialize_state_manager(lua_State*);
+  state_manager::~state_manager() {}
 
-  void initialize(lua_State* L) {
-    initialize_buffer(L);
-    initialize_fill_dir(L);
-    initialize_main(L);
-    initialize_state_manager(L);
+  void initialize_state_manager_main(lua_State*);
+
+  void initialize_state_manager(lua_State* L) {
+    lua_newtable(L);
+    {
+      initialize_state_manager_main(L);
+    }
+    luaX_set_field(L, -2, "state_manager");
   }
-}
-
-extern "C" int luaopen_dromozoa_fuse(lua_State* L) {
-  lua_newtable(L);
-  dromozoa::initialize(L);
-  return 1;
 }

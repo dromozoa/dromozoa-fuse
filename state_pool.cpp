@@ -1,4 +1,4 @@
-// Copyright (C) 2018 Tomoyuki Fujimori <moyu@dromozoa.com>
+// Copyright (C) 2019 Tomoyuki Fujimori <moyu@dromozoa.com>
 //
 // This file is part of dromozoa-fuse.
 //
@@ -16,8 +16,6 @@
 // along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "common.hpp"
-
-#include <lualib.h>
 
 #include <sstream>
 

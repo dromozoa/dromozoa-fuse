@@ -36,6 +36,10 @@
 #include <dromozoa/bind.hpp>
 #include <dromozoa/bind/mutex.hpp>
 
+extern "C" {
+#include <lualib.h>
+}
+
 namespace dromozoa {
   class state_manager {
   public:
@@ -46,7 +50,7 @@ namespace dromozoa {
 
   class managed_state {
   public:
-    managed_state(state_manager*);
+    explicit managed_state(state_manager*);
     ~managed_state();
     lua_State* get() const;
   private:
