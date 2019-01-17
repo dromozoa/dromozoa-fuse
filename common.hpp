@@ -48,6 +48,8 @@ namespace dromozoa {
     virtual void close(lua_State*) = 0;
   };
 
+  state_manager* check_state_manager(lua_State*, int);
+
   class managed_state {
   public:
     explicit managed_state(state_manager*);

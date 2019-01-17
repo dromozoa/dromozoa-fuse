@@ -18,13 +18,29 @@
 #include "common.hpp"
 
 namespace dromozoa {
+  namespace {
+    void impl_gc(lua_State* L) {
+      check_state_manager(L, 1)->~state_manager();
+    }
+  }
+
   state_manager::~state_manager() {}
+
+  state_manager* check_state_manager(lua_State* L, int arg) {
+    return luaX_check_udata<state_manager>(L, arg, "dromozoa.fuse.state_manager");
+  }
 
   void initialize_state_manager_main(lua_State*);
 
   void initialize_state_manager(lua_State* L) {
     lua_newtable(L);
     {
+      luaL_newmetatable(L, "dromozoa.fuse.state_manager");
+      lua_pushvalue(L, -2);
+      luaX_set_field(L, -2, "__index");
+      luaX_set_field(L, -1, "__gc", impl_gc);
+      lua_pop(L, 1);
+
       initialize_state_manager_main(L);
     }
     luaX_set_field(L, -2, "state_manager");

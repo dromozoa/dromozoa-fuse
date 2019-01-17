@@ -17,9 +17,45 @@
 
 #include "common.hpp"
 
+#include <dromozoa/bind/condition_variable.hpp>
+#include <dromozoa/bind/mutex.hpp>
+
 namespace dromozoa {
   namespace {
-    void impl_main(lua_State*) {
+    class state_manager_main : public state_manager {
+    public:
+      state_manager_main(lua_State* L, int index) : state_(lua_newthread(L)) {
+        lua_pushvalue(L, index);
+        lua_xmove(L, state_, 1);
+      }
+
+      lua_State* open() {
+        lock_guard<> lock(mutex_);
+        while (!state_) {
+          condition_.wait(lock);
+        }
+        lua_State* state = state_;
+        state_ = 0;
+        return state;
+      }
+
+      void close(lua_State* state) {
+        lock_guard<> lock(mutex_);
+        state_ = state;
+        condition_.notify_one();
+      }
+
+    private:
+      lua_State* state_;
+      mutex mutex_;
+      condition_variable condition_;
+      state_manager_main(const state_manager_main&);
+      state_manager_main& operator=(const state_manager_main&);
+    };
+
+    void impl_main(lua_State* L) {
+      luaX_new<state_manager_main>(L, L, 1);
+      luaX_set_metatable(L, "dromozoa.fuse.state_manager");
     }
   }
 
