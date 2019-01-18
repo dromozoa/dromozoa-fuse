@@ -50,4 +50,4 @@ fuse_la_SOURCES = \
 	operations.cpp \
 	state_manager.cpp \
 	state_manager_main.cpp \
-	state_pool.cpp
+	state_manager_pool.cpp
