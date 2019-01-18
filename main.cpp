@@ -24,7 +24,7 @@ namespace dromozoa {
   namespace {
     void impl_main(lua_State* L) {
       luaL_checktype(L, 1, LUA_TTABLE);
-      luaL_checktype(L, 2, LUA_TTABLE);
+      state_manager* manager = check_state_manager(L, 2);
 
       std::vector<std::string> args;
       for (int i = 1; ; ++i) {
@@ -47,7 +47,7 @@ namespace dromozoa {
       }
       argv.push_back(0);
 
-      scoped_ptr<operations> self(new operations(L, 2));
+      scoped_ptr<operations> self(new operations(manager));
       fuse_operations* ops = self->get();
       int result = fuse_main(argv.size() - 1, const_cast<char**>(argv.data()), ops, self.release());
       luaX_push(L, result);

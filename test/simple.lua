@@ -405,5 +405,5 @@ function operations:utimens(path, atime, mtime)
   end
 end
 
-local result = fuse.main({ arg[0], ... }, operations)
+local result = fuse.main({ arg[0], ... }, fuse.state_manager.main(operations))
 assert(result == 0)
