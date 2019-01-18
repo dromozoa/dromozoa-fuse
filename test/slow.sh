@@ -15,39 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
-ACLOCAL_AMFLAGS = -I m4
+mount_point=$1
 
-EXTRA_DIST = \
-	.gitignore \
-	README.md \
-	bind \
-	build_docs.lua \
-	docs \
-	dromozoa-fuse-*.rockspec \
-	m4/update \
-	test \
-	test.sh
-TESTS = \
-	test/test_lua.sh \
-	test/test_empty.sh \
-	test/test_simple.sh \
-	test/test_slow.sh
+date "+%Y-%m-%d %H:%M:%S"
 
-luaexec_LTLIBRARIES = fuse.la
+cat "$mount_point/slow1.txt" >test-slow1.txt &
+pid1=$!
+cat "$mount_point/slow2.txt" >test-slow2.txt &
+pid2=$!
+cat "$mount_point/slow3.txt" >test-slow3.txt &
+pid3=$!
+cat "$mount_point/slow4.txt" >test-slow4.txt &
+pid4=$!
 
-noinst_HEADERS = common.hpp
+wait "$pid1" "$pid2" "$pid3" "$pid4"
 
-fuse_la_CPPFLAGS = -I$(top_srcdir)/bind
-fuse_la_LDFLAGS = -module -avoid-version -shared
-fuse_la_SOURCES = \
-	buffer.cpp \
-	convert.cpp \
-	fill_dir.cpp \
-	handle.cpp \
-	main.cpp \
-	managed_state.cpp \
-	module.cpp \
-	operations.cpp \
-	state_manager.cpp \
-	state_manager_main.cpp \
-	state_pool.cpp
+date "+%Y-%m-%d %H:%M:%S"
+
+cat test-slow1.txt test-slow2.txt test-slow3.txt test-slow4.txt
+rm test-slow1.txt test-slow2.txt test-slow3.txt test-slow4.txt

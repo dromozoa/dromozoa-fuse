@@ -56,11 +56,18 @@ namespace dromozoa {
     void impl_get_context(lua_State* L) {
       convert(L, fuse_get_context());
     }
+
+    void impl_get_thread_id(lua_State* L) {
+      std::ostringstream out;
+      out << pthread_self();
+      luaX_push(L, out.str());
+    }
   }
 
   void initialize_main(lua_State* L) {
     luaX_set_field(L, -1, "main", impl_main);
     luaX_set_field(L, -1, "get_context", impl_get_context);
+    luaX_set_field(L, -1, "get_thread_id", impl_get_thread_id);
 
     luaX_set_field(L, -1, "FUSE_CAP_ASYNC_READ", FUSE_CAP_ASYNC_READ);
     luaX_set_field(L, -1, "FUSE_CAP_POSIX_LOCKS", FUSE_CAP_POSIX_LOCKS);
