@@ -26,11 +26,11 @@ function operations:getattr(path)
       st_mode = unix.bor(unix.S_IFDIR, tonumber("0555", 8));
       st_nlink = 2;
     }
-  elseif path == "/slow.txt" then
+  elseif path:find "/slow%d.txt" then
     return {
       st_mode = unix.bor(unix.S_IFREG, tonumber("0444", 8));
       st_nlink = 1;
-      st_size = 4;
+      st_size = 32;
     }
   else
     error(-unix.ENOENT, 0)
@@ -38,9 +38,9 @@ function operations:getattr(path)
 end
 
 function operations:read(path)
-  if path == "/slow.txt" then
-    unix.nanosleep(2)
-    return "foo\n"
+  if path:find "/slow%d.txt" then
+    unix.nanosleep(1)
+    return ("%-31s\n"):format(fuse.get_thread_id())
   else
     error(-unix.ENOENT, 0)
   end
@@ -54,7 +54,9 @@ function operations:readdir(path, fill)
   if path == "/" then
     fill "."
     fill ".."
-    fill "slow.txt"
+    for i = 0, 9 do
+      fill(("slow%d.txt"):format(i))
+    end
   else
     error(-unix.ENOENT, 0)
   end
