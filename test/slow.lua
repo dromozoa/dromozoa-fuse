@@ -39,7 +39,7 @@ end
 
 function operations:read(path)
   if path:find "/slow%d.txt" then
-    unix.nanosleep(1)
+    unix.nanosleep(0.25)
     return ("%-31s\n"):format(fuse.get_thread_id())
   else
     error(-unix.ENOENT, 0)

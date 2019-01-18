@@ -30,7 +30,8 @@ EXTRA_DIST = \
 TESTS = \
 	test/test_lua.sh \
 	test/test_empty.sh \
-	test/test_simple.sh
+	test/test_simple.sh \
+	test/test_slow.sh
 
 luaexec_LTLIBRARIES = fuse.la
 
