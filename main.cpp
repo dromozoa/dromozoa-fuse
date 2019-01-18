@@ -17,8 +17,9 @@
 
 #include "common.hpp"
 
-#include <vector>
+#include <sstream>
 #include <string>
+#include <vector>
 
 namespace dromozoa {
   namespace {

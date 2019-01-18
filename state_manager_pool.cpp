@@ -17,11 +17,15 @@
 
 #include "common.hpp"
 
-#include <sstream>
-
 extern "C" {
 #include <lualib.h>
 }
+
+#include <list>
+#include <sstream>
+
+#include <dromozoa/bind/condition_variable.hpp>
+#include <dromozoa/bind/mutex.hpp>
 
 namespace dromozoa {
   class state_pool {

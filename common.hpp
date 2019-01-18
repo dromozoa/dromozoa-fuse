@@ -31,10 +31,7 @@
 #include <fuse.h>
 #endif
 
-#include <list>
-
 #include <dromozoa/bind.hpp>
-#include <dromozoa/bind/mutex.hpp>
 
 namespace dromozoa {
   class state_manager {
