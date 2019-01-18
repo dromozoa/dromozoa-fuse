@@ -70,32 +70,12 @@ pid=$!
 
 sleep 1
 
-case X$test_script in
-  X*.sh)
-    if sh -e "$test_script" "$mount_point"
-    then
-      test_result=OK
-    else
-      test_result=NG
-    fi;;
-  X*.lua)
-    case X$# in
-      X0)
-        if lua "$test_script" "$mount_point"
-        then
-          test_result=OK
-        else
-          test_result=NG
-        fi;;
-      *)
-        if "$@" "$test_script" "$mount_point"
-        then
-          test_result=OK
-        else
-          test_result=NG
-        fi;;
-    esac;;
-esac
+if sh -e "$test_script" "$mount_point"
+then
+  test_result=OK
+else
+  test_result=NG
+fi
 
 sleep 1
 
