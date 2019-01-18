@@ -17,4 +17,5 @@
 
 local fuse = require "dromozoa.fuse"
 
-local main = fuse.state_manager.main(arg[0])
+local main = fuse.state_manager.main {}
+assert(getmetatable(main))

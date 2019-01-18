@@ -24,9 +24,11 @@ namespace dromozoa {
   namespace {
     class state_manager_main : public state_manager {
     public:
-      state_manager_main(lua_State* L, int index) : state_(lua_newthread(L)) {
-        lua_pushvalue(L, index);
-        lua_xmove(L, state_, 1);
+      state_manager_main(lua_State* state, int reference)
+        : state_(state), reference_(reference) {}
+
+      ~state_manager_main() {
+        luaL_unref(state_, LUA_REGISTRYINDEX, reference_);
       }
 
       lua_State* open() {
@@ -47,6 +49,7 @@ namespace dromozoa {
 
     private:
       lua_State* state_;
+      int reference_;
       mutex mutex_;
       condition_variable condition_;
       state_manager_main(const state_manager_main&);
@@ -54,7 +57,11 @@ namespace dromozoa {
     };
 
     void impl_main(lua_State* L) {
-      luaX_new<state_manager_main>(L, L, 1);
+      lua_State* state = lua_newthread(L);
+      int reference = luaL_ref(L, LUA_REGISTRYINDEX);
+      lua_pushvalue(L, -1);
+      lua_xmove(L, state, 1);
+      luaX_new<state_manager_main>(L, state, reference);
       luaX_set_metatable(L, "dromozoa.fuse.state_manager");
     }
   }

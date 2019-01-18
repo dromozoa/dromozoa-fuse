@@ -36,10 +36,6 @@
 #include <dromozoa/bind.hpp>
 #include <dromozoa/bind/mutex.hpp>
 
-extern "C" {
-#include <lualib.h>
-}
-
 namespace dromozoa {
   class state_manager {
   public:
@@ -64,35 +60,14 @@ namespace dromozoa {
 
   class operations {
   public:
-    operations(lua_State*, int);
+    operations(state_manager*);
     fuse_operations* get();
-    lua_State* state() const;
-    bool prepare(lua_State*, const char*) const;
-    dromozoa::mutex& mutex();
+    state_manager* manager() const;
   private:
     fuse_operations ops_;
-    luaX_reference<> ref_;
-    dromozoa::mutex mutex_;
+    state_manager* manager_;
     operations(const operations&);
     operations& operator=(const operations&);
-    bool check(lua_State*, const char*) const;
-  };
-
-  class state_pool {
-  public:
-    state_pool(size_t, size_t, const std::string&, const std::string&);
-    ~state_pool();
-    lua_State* open();
-    void close(lua_State*);
-  private:
-    size_t max_idle_states_;
-    std::string chunk_;
-    std::string name_;
-    mutex mutex_;
-    size_t active_states_;
-    std::list<lua_State*> idle_states_;
-    state_pool(const state_pool&);
-    state_pool& operator=(const state_pool&);
   };
 
   class handle {

@@ -19,7 +19,28 @@
 
 #include <sstream>
 
+extern "C" {
+#include <lualib.h>
+}
+
 namespace dromozoa {
+  class state_pool {
+  public:
+    state_pool(size_t, size_t, const std::string&, const std::string&);
+    ~state_pool();
+    lua_State* open();
+    void close(lua_State*);
+  private:
+    size_t max_idle_states_;
+    std::string chunk_;
+    std::string name_;
+    mutex mutex_;
+    size_t active_states_;
+    std::list<lua_State*> idle_states_;
+    state_pool(const state_pool&);
+    state_pool& operator=(const state_pool&);
+  };
+
   namespace {
     class scoped_state {
     public:
