@@ -23,51 +23,35 @@ extern "C" {
 
 #include <list>
 #include <sstream>
+#include <stdexcept>
 
 #include <dromozoa/bind/condition_variable.hpp>
 #include <dromozoa/bind/mutex.hpp>
 
 namespace dromozoa {
-  class state_pool {
-  public:
-    state_pool(size_t, size_t, const std::string&, const std::string&);
-    ~state_pool();
-    lua_State* open();
-    void close(lua_State*);
-  private:
-    size_t max_idle_states_;
-    std::string chunk_;
-    std::string name_;
-    mutex mutex_;
-    size_t active_states_;
-    std::list<lua_State*> idle_states_;
-    state_pool(const state_pool&);
-    state_pool& operator=(const state_pool&);
-  };
-
   namespace {
     class scoped_state {
     public:
-      explicit scoped_state(lua_State* ptr) : ptr_(ptr) {}
+      explicit scoped_state(lua_State* state) : state_(state) {}
 
       ~scoped_state() {
-        if (ptr_) {
-          lua_close(ptr_);
+        if (state_) {
+          lua_close(state_);
         }
       }
 
       lua_State* get() const {
-        return ptr_;
+        return state_;
       }
 
       lua_State* release() {
-        lua_State* ptr = ptr_;
-        ptr_ = 0;
-        return ptr;
+        lua_State* state = state_;
+        state_ = 0;
+        return state;
       }
 
     private:
-      lua_State* ptr_;
+      lua_State* state_;
       scoped_state(const scoped_state&);
       scoped_state& operator=(const scoped_state&);
     };
@@ -81,67 +65,94 @@ namespace dromozoa {
           if (lua_pcall(L, 0, 1, 0) == 0) {
             return state.release();
           } else {
-            DROMOZOA_UNEXPECTED(lua_tostring(L, -1));
+            throw std::runtime_error(lua_tostring(L, -1));
           }
         } else {
           std::ostringstream out;
           out << "could not luaL_loadbuffer: error number " << result;
-          DROMOZOA_UNEXPECTED(out.str());
+          throw std::runtime_error(out.str());
         }
       } else {
-        DROMOZOA_UNEXPECTED("could not luaL_newstate");
-      }
-      return 0;
-    }
-  }
-
-  state_pool::state_pool(size_t start_states, size_t max_idle_states, const std::string& chunk, const std::string& name)
-    : max_idle_states_(max_idle_states),
-      chunk_(chunk),
-      name_(name),
-      active_states_() {
-    for (size_t i = 0; i < start_states; ++i) {
-      scoped_state state(construct(chunk_, name_));
-      if (lua_State* L = state.get()) {
-        idle_states_.push_back(L);
-        state.release();
-      } else {
-        break;
+        throw std::runtime_error("could not luaL_newstate");
       }
     }
-  }
 
-  state_pool::~state_pool() {
-    while (true) {
-      lua_State* L = 0;
-      {
-        lock_guard<> lock(mutex_);
-        if (idle_states_.empty()) {
-          break;
+    class state_manager_pool : public state_manager {
+    public:
+      state_manager_pool(size_t start_states, size_t max_states, size_t max_idle_states, const std::string& chunk, const std::string& name)
+        : max_states_(max_states),
+          max_idle_states_(max_idle_states),
+          chunk_(chunk),
+          name_(name),
+          active_states_() {
+        for (size_t i = 0; i < start_states; ++i) {
+          scoped_state state(construct(chunk_, name_));
+          idle_states_.push_back(state.get());
+          state.release();
         }
-        L = idle_states_.front();
-        idle_states_.pop_front();
       }
-      lua_close(L);
-    }
 
-    {
-      lock_guard<> lock(mutex_);
-      if (active_states_ > 0) {
-        DROMOZOA_UNEXPECTED("there are active states");
+      ~state_manager_pool() {
+        while (!idle_states_.empty()) {
+          scoped_state state(idle_states_.front());
+          idle_states_.pop_front();
+        }
       }
+
+      lua_State* open() {
+        {
+          lock_guard<> lock(mutex_);
+          while (idle_states_.empty() && active_states_ >= max_states_) {
+            condition_.wait(lock);
+          }
+          ++active_states_;
+          if (!idle_states_.empty()) {
+            scoped_state state(idle_states_.front());
+            idle_states_.pop_front();
+            return state.release();
+          }
+        }
+        return construct(chunk_, name_);
+      }
+
+      void close(lua_State* L) {
+        scoped_state state(L);
+        {
+          lock_guard<> lock(mutex_);
+          --active_states_;
+          if (idle_states_.size() < max_idle_states_) {
+            idle_states_.push_back(state.get());
+            state.release();
+          }
+        }
+      }
+
+    private:
+      size_t max_states_;
+      size_t max_idle_states_;
+      std::string chunk_;
+      std::string name_;
+      mutex mutex_;
+      condition_variable condition_;
+      size_t active_states_;
+      std::list<lua_State*> idle_states_;
+
+      state_manager_pool(const state_manager_pool&);
+      state_manager_pool& operator=(const state_manager_pool&);
+    };
+
+    void impl_pool(lua_State* L) {
+      size_t start_states = luaX_check_integer<size_t>(L, 1);
+      size_t max_states = luaX_check_integer<size_t>(L, 2);
+      size_t max_idle_states = luaX_check_integer<size_t>(L, 3);
+      luaX_string_reference chunk = luaX_check_string(L, 4);
+      luaX_string_reference name = luaX_check_string(L, 5);
+      luaX_new<state_manager_pool>(L, start_states, max_states, max_idle_states, std::string(chunk.data(), chunk.size()), std::string(name.data(), name.size()));
+      luaX_set_metatable(L, "dromozoa.fuse.state_manager");
     }
   }
 
-  lua_State* state_pool::open() {
-    {
-      lock_guard<> lock(mutex_);
-      if (!idle_states_.empty()) {
-        lua_State* L = idle_states_.front();
-        idle_states_.pop_front();
-        return L;
-      }
-    }
-    return 0;
+  void initialize_state_manager_pool(lua_State* L) {
+    luaX_set_field(L, -1, "pool", impl_pool);
   }
 }
