@@ -17,8 +17,9 @@
 
 #include "common.hpp"
 
-#include <vector>
+#include <sstream>
 #include <string>
+#include <vector>
 
 namespace dromozoa {
   namespace {
@@ -62,12 +63,19 @@ namespace dromozoa {
       out << pthread_self();
       luaX_push(L, out.str());
     }
+
+    void impl_get_state_id(lua_State* L) {
+      std::ostringstream out;
+      out << L;
+      luaX_push(L, out.str());
+    }
   }
 
   void initialize_main(lua_State* L) {
     luaX_set_field(L, -1, "main", impl_main);
     luaX_set_field(L, -1, "get_context", impl_get_context);
     luaX_set_field(L, -1, "get_thread_id", impl_get_thread_id);
+    luaX_set_field(L, -1, "get_state_id", impl_get_state_id);
 
     luaX_set_field(L, -1, "FUSE_CAP_ASYNC_READ", FUSE_CAP_ASYNC_READ);
     luaX_set_field(L, -1, "FUSE_CAP_POSIX_LOCKS", FUSE_CAP_POSIX_LOCKS);

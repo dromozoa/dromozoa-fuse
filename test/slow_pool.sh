@@ -17,7 +17,7 @@
 
 mount_point=$1
 
-date "+%Y-%m-%d %H:%M:%S"
+t=`lua -e "local unix = require 'dromozoa.unix' print(unix.clock_gettime(unix.CLOCK_MONOTONIC):tostring())"`
 
 cat "$mount_point/slow1.txt" >test-slow1.txt &
 pid1=$!
@@ -29,8 +29,21 @@ cat "$mount_point/slow4.txt" >test-slow4.txt &
 pid4=$!
 
 wait "$pid1" "$pid2" "$pid3" "$pid4"
+t=`lua -e "local unix = require 'dromozoa.unix' print(math.floor((unix.clock_gettime(unix.CLOCK_MONOTONIC):tonumber() - $t) * 1000))"`
 
-date "+%Y-%m-%d %H:%M:%S"
-
-cat test-slow1.txt test-slow2.txt test-slow3.txt test-slow4.txt
+tid1=`cat test-slow1.txt`
+tid2=`cat test-slow2.txt`
+tid3=`cat test-slow3.txt`
+tid4=`cat test-slow4.txt`
 rm test-slow1.txt test-slow2.txt test-slow3.txt test-slow4.txt
+
+echo "[[[[$tid1]]]]"
+echo "[[[[$tid2]]]]"
+echo "[[[[$tid3]]]]"
+echo "[[[[$tid4]]]]"
+echo "[[[[$t]]]]"
+
+if test "$t" -lt 200 -o 400 -lt "$t"
+then
+  exit 1
+fi

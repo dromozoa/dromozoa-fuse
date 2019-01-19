@@ -31,7 +31,8 @@ TESTS = \
 	test/test_lua.sh \
 	test/test_empty.sh \
 	test/test_simple.sh \
-	test/test_slow.sh
+	test/test_slow_main.sh \
+	test/test_slow_pool.sh
 
 luaexec_LTLIBRARIES = fuse.la
 
@@ -50,4 +51,4 @@ fuse_la_SOURCES = \
 	operations.cpp \
 	state_manager.cpp \
 	state_manager_main.cpp \
-	state_pool.cpp
+	state_manager_pool.cpp
