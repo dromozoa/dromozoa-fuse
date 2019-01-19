@@ -32,23 +32,39 @@
 #endif
 
 #include <dromozoa/bind.hpp>
-#include <dromozoa/bind/mutex.hpp>
 
 namespace dromozoa {
+  class state_manager {
+  public:
+    virtual ~state_manager() = 0;
+    virtual lua_State* open() = 0;
+    virtual void close(lua_State*) = 0;
+  };
+
+  state_manager* check_state_manager(lua_State*, int);
+
+  class managed_state {
+  public:
+    explicit managed_state(state_manager*);
+    ~managed_state();
+    lua_State* get() const;
+  private:
+    state_manager* manager_;
+    lua_State* state_;
+    managed_state(const managed_state&);
+    managed_state& operator=(const managed_state&);
+  };
+
   class operations {
   public:
-    operations(lua_State*, int);
+    operations(state_manager*);
     fuse_operations* get();
-    lua_State* state() const;
-    bool prepare(lua_State*, const char*) const;
-    dromozoa::mutex& mutex();
+    state_manager* manager() const;
   private:
     fuse_operations ops_;
-    luaX_reference<> ref_;
-    dromozoa::mutex mutex_;
+    state_manager* manager_;
     operations(const operations&);
     operations& operator=(const operations&);
-    bool check(lua_State*, const char*) const;
   };
 
   class handle {

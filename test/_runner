@@ -63,8 +63,8 @@ shift
 mkdir -p "$mount_point"
 
 case X$# in
-  X0) lua "$fuse_script" "$mount_point" -d -s &;;
-  *) "$@" "$fuse_script" "$mount_point" -d -s &;;
+  X0) lua "$fuse_script" "$mount_point" -d &;;
+  *) "$@" "$fuse_script" "$mount_point" -d &;;
 esac
 pid=$!
 

@@ -17,14 +17,15 @@
 
 #include "common.hpp"
 
-#include <vector>
+#include <sstream>
 #include <string>
+#include <vector>
 
 namespace dromozoa {
   namespace {
     void impl_main(lua_State* L) {
       luaL_checktype(L, 1, LUA_TTABLE);
-      luaL_checktype(L, 2, LUA_TTABLE);
+      state_manager* manager = check_state_manager(L, 2);
 
       std::vector<std::string> args;
       for (int i = 1; ; ++i) {
@@ -47,7 +48,7 @@ namespace dromozoa {
       }
       argv.push_back(0);
 
-      scoped_ptr<operations> self(new operations(L, 2));
+      scoped_ptr<operations> self(new operations(manager));
       fuse_operations* ops = self->get();
       int result = fuse_main(argv.size() - 1, const_cast<char**>(argv.data()), ops, self.release());
       luaX_push(L, result);
@@ -56,11 +57,25 @@ namespace dromozoa {
     void impl_get_context(lua_State* L) {
       convert(L, fuse_get_context());
     }
+
+    void impl_get_thread_id(lua_State* L) {
+      std::ostringstream out;
+      out << pthread_self();
+      luaX_push(L, out.str());
+    }
+
+    void impl_get_state_id(lua_State* L) {
+      std::ostringstream out;
+      out << L;
+      luaX_push(L, out.str());
+    }
   }
 
   void initialize_main(lua_State* L) {
     luaX_set_field(L, -1, "main", impl_main);
     luaX_set_field(L, -1, "get_context", impl_get_context);
+    luaX_set_field(L, -1, "get_thread_id", impl_get_thread_id);
+    luaX_set_field(L, -1, "get_state_id", impl_get_state_id);
 
     luaX_set_field(L, -1, "FUSE_CAP_ASYNC_READ", FUSE_CAP_ASYNC_READ);
     luaX_set_field(L, -1, "FUSE_CAP_POSIX_LOCKS", FUSE_CAP_POSIX_LOCKS);

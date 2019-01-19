@@ -15,34 +15,7 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
-local unix = require "dromozoa.unix"
 local fuse = require "dromozoa.fuse"
 
-local operations = {}
-
-function operations:getattr(path)
-  if path == "/" then
-    return {
-      st_mode = unix.bor(unix.S_IFDIR, tonumber("0755", 8));
-      st_nlink = 2;
-    }
-  else
-    error(-unix.ENOENT, 0)
-  end
-end
-
-function operations:statfs(path)
-  return {}
-end
-
-function operations:readdir(path, fill)
-  if path == "/" then
-    fill "."
-    fill ".."
-  else
-    error(-unix.ENOENT, 0)
-  end
-end
-
-local result = fuse.main({ arg[0], ... }, fuse.state_manager.main(operations))
-assert(result == 0)
+local main = fuse.state_manager.main {}
+assert(getmetatable(main))
