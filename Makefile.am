@@ -31,7 +31,7 @@ TESTS = \
 	test/test_lua.sh \
 	test/test_empty.sh \
 	test/test_simple.sh \
-	test/test_slow.sh
+	test/test_slow_main.sh
 
 luaexec_LTLIBRARIES = fuse.la
 
