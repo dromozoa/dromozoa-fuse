@@ -31,6 +31,7 @@ namespace dromozoa {
   }
 
   void initialize_state_manager_main(lua_State*);
+  void initialize_state_manager_pool(lua_State*);
 
   void initialize_state_manager(lua_State* L) {
     lua_newtable(L);
@@ -42,6 +43,7 @@ namespace dromozoa {
       lua_pop(L, 1);
 
       initialize_state_manager_main(L);
+      initialize_state_manager_pool(L);
     }
     luaX_set_field(L, -2, "state_manager");
   }
