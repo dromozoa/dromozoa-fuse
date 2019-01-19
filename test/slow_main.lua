@@ -30,7 +30,7 @@ function operations:getattr(path)
     return {
       st_mode = unix.bor(unix.S_IFREG, tonumber("0444", 8));
       st_nlink = 1;
-      st_size = 32;
+      st_size = 64;
     }
   else
     error(-unix.ENOENT, 0)
@@ -39,8 +39,8 @@ end
 
 function operations:read(path)
   if path:find "/slow%d.txt" then
-    unix.nanosleep(0.25)
-    return ("%-31s\n"):format(fuse.get_thread_id())
+    unix.nanosleep(0.2)
+    return ("%-63s\n"):format(fuse.get_thread_id())
   else
     error(-unix.ENOENT, 0)
   end
