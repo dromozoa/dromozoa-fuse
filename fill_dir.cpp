@@ -49,10 +49,13 @@ namespace dromozoa {
     void impl_call(lua_State* L) {
       fill_dir* self = luaX_check_udata<fill_dir>(L, 1, "dromozoa.fuse.fill_dir");
       luaX_string_reference name = luaX_check_string(L, 2);
-      // TODO impl this
-      // struct stat buffer = {};
+      const struct stat* buffer_ptr = 0;
+      struct stat buffer = {};
+      if (convert(L, 3, &buffer)) {
+        buffer_ptr = &buffer;
+      }
       off_t offset = luaX_opt_integer<off_t>(L, 4, 0);
-      int result = (*self)(name.data(), 0, offset);
+      int result = (*self)(name.data(), buffer_ptr, offset);
       luaX_push(L, result);
     }
   }
