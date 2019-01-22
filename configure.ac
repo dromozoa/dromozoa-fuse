@@ -36,6 +36,7 @@ AC_CHECK_MEMBERS([struct stat.st_mtimespec])
 AX_PTHREAD([], [AC_MSG_ERROR([could not find pthread])])
 CXXFLAGS="$CXXFLAGS $PTHREAD_CFLAGS"
 LIBS="$LIBS $PTHREAD_LIBS"
+AC_SEARCH_LIBS([pthread_create], [pthread])
 
 AC_SEARCH_LIBS([fuse_main], [osxfuse fuse], [], [AC_MSG_ERROR([could not find fuse])])
 AC_CHECK_HEADER([osxfuse/fuse.h], [AC_DEFINE(HAVE_OSXFUSE_FUSE_H, 1, [Define to 1 if you have the <osxfuse/fuse.h> header file.])], [], [
