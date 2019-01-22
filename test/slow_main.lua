@@ -16,6 +16,7 @@
 -- along with dromozoa-fuse.  If not, see <http://www.gnu.org/licenses/>.
 
 local unix = require "dromozoa.unix"
+local multi = require "dromozoa.multi"
 local fuse = require "dromozoa.fuse"
 
 local operations = {}
@@ -40,7 +41,7 @@ end
 function operations:read(path)
   if path:find "/slow%d.txt" then
     unix.nanosleep(0.2)
-    return ("%-63s\n"):format(fuse.get_thread_id() .. " " .. fuse.get_state_id())
+    return ("%-63s\n"):format(multi.this_thread_id() .. " " .. multi.this_state_id())
   else
     error(-unix.ENOENT, 0)
   end
