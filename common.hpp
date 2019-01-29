@@ -31,6 +31,10 @@
 #include <fuse.h>
 #endif
 
+#if FUSE_VERSION < 28
+#error libfuse 2.8 or newer required
+#endif
+
 #include <dromozoa/bind.hpp>
 
 namespace dromozoa {

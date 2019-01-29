@@ -86,8 +86,10 @@ namespace dromozoa {
     DROMOZOA_SET_FIELD(max_readahead);
     DROMOZOA_SET_FIELD(capable);
     DROMOZOA_SET_FIELD(want);
+#if FUSE_VERSION >= 29
     DROMOZOA_SET_FIELD(max_background);
     DROMOZOA_SET_FIELD(congestion_threshold);
+#endif
     return index;
   }
 
@@ -101,7 +103,9 @@ namespace dromozoa {
     DROMOZOA_SET_FIELD(keep_cache);
     DROMOZOA_SET_FIELD(flush);
     DROMOZOA_SET_FIELD(nonseekable);
+#if FUSE_VERSION >= 29
     DROMOZOA_SET_FIELD(flock_release);
+#endif
     DROMOZOA_SET_FIELD(fh);
     DROMOZOA_SET_FIELD(lock_owner);
     return index;
@@ -143,8 +147,10 @@ namespace dromozoa {
       DROMOZOA_OPT_FIELD(max_readahead);
       DROMOZOA_OPT_FIELD(capable);
       DROMOZOA_OPT_FIELD(want);
+#if FUSE_VERSION >= 29
       DROMOZOA_OPT_FIELD(max_background);
       DROMOZOA_OPT_FIELD(congestion_threshold);
+#endif
       return true;
     } else {
       return false;
@@ -157,8 +163,10 @@ namespace dromozoa {
   bool convert(lua_State* L, int index, struct fuse_operations* that) {
     if (lua_istable(L, index)) {
       DROMOZOA_OPT_FIELD(flag_nullpath_ok);
+#if FUSE_VERSION >= 29
       DROMOZOA_OPT_FIELD(flag_nopath);
       DROMOZOA_OPT_FIELD(flag_utime_omit_ok);
+#endif
       return true;
     } else {
       return false;
@@ -174,7 +182,9 @@ namespace dromozoa {
       DROMOZOA_OPT_FIELD(keep_cache);
       DROMOZOA_OPT_FIELD(flush);
       DROMOZOA_OPT_FIELD(nonseekable);
+#if FUSE_VERSION >= 29
       DROMOZOA_OPT_FIELD(flock_release);
+#endif
       DROMOZOA_OPT_FIELD(fh);
       DROMOZOA_OPT_FIELD(lock_owner);
       return true;
