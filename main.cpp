@@ -70,10 +70,12 @@ namespace dromozoa {
     luaX_set_field(L, -1, "FUSE_CAP_EXPORT_SUPPORT", FUSE_CAP_EXPORT_SUPPORT);
     luaX_set_field(L, -1, "FUSE_CAP_BIG_WRITES", FUSE_CAP_BIG_WRITES);
     luaX_set_field(L, -1, "FUSE_CAP_DONT_MASK", FUSE_CAP_DONT_MASK);
+#if FUSE_VERSION >= 29
     luaX_set_field(L, -1, "FUSE_CAP_SPLICE_WRITE", FUSE_CAP_SPLICE_WRITE);
     luaX_set_field(L, -1, "FUSE_CAP_SPLICE_MOVE", FUSE_CAP_SPLICE_MOVE);
     luaX_set_field(L, -1, "FUSE_CAP_SPLICE_READ", FUSE_CAP_SPLICE_READ);
     luaX_set_field(L, -1, "FUSE_CAP_FLOCK_LOCKS", FUSE_CAP_FLOCK_LOCKS);
     luaX_set_field(L, -1, "FUSE_CAP_IOCTL_DIR", FUSE_CAP_IOCTL_DIR);
+#endif
   }
 }
