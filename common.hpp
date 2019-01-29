@@ -90,6 +90,7 @@ namespace dromozoa {
   int convert(lua_State*, const struct fuse_file_info*);
   int convert(lua_State*, const struct flock*);
   int convert(lua_State*, const struct timespec*);
+  bool convert(lua_State*, int, struct fuse_operations*);
   bool convert(lua_State*, int, struct fuse_conn_info*);
   bool convert(lua_State*, int, struct fuse_file_info*);
   bool convert(lua_State*, int, struct flock*);

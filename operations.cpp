@@ -725,6 +725,30 @@ namespace dromozoa {
       return -ENOSYS;
     }
 
+    // TODO impl?
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L446
+    // bmap
+
+    // TODO impl?
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/ioctl.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L493
+    // ioctl
+
+    // TODO impl?
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/poll.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L508
+    // poll
+
+    // TODO impl?
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/write.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L528
+    // write_buf (2.9)
+
+    // TODO impl?
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/read.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L539
+    // read_buf (2.9)
+
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/flock.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L557
     int flock(const char* path, struct fuse_file_info* info_ptr, int operation) {
