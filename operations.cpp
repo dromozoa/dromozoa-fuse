@@ -427,7 +427,7 @@ namespace dromozoa {
     int setxattr(const char* path, const char* name, const char* buffer, size_t size, int flags, uint32_t position) {
 #else
     int setxattr(const char* path, const char* name, const char* buffer, size_t size, int flags) {
-      static const dromozoa::bind::luaX_nil_t position = luaX_nil;
+      static const luaX_nil_t position = luaX_nil;
 #endif
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       managed_state state(self->manager());
@@ -447,7 +447,7 @@ namespace dromozoa {
     int getxattr(const char* path, const char* name, char* buffer, size_t size, uint32_t position) {
 #else
     int getxattr(const char* path, const char* name, char* buffer, size_t size) {
-      static const dromozoa::bind::luaX_nil_t position = luaX_nil;
+      static const luaX_nil_t position = luaX_nil;
 #endif
       operations* self = static_cast<operations*>(fuse_get_context()->private_data);
       managed_state state(self->manager());
@@ -725,6 +725,30 @@ namespace dromozoa {
       return -ENOSYS;
     }
 
+    // TODO impl?
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L446
+    // bmap
+
+    // TODO impl?
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/ioctl.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L493
+    // ioctl
+
+    // TODO impl?
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/poll.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L508
+    // poll
+
+    // TODO impl?
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/write.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L528
+    // write_buf (2.9)
+
+    // TODO impl?
+    // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/read.2.html
+    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L539
+    // read_buf (2.9)
+
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/flock.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L557
     int flock(const char* path, struct fuse_file_info* info_ptr, int operation) {
@@ -802,8 +826,10 @@ namespace dromozoa {
     DROMOZOA_SET_OPERATION(fgetattr);
     DROMOZOA_SET_OPERATION(lock);
     DROMOZOA_SET_OPERATION(utimens);
+#if FUSE_VERSION >= 29
     DROMOZOA_SET_OPERATION(flock);
     DROMOZOA_SET_OPERATION(fallocate);
+#endif
   }
 
   fuse_operations* operations::get() {

@@ -31,6 +31,10 @@
 #include <fuse.h>
 #endif
 
+#if FUSE_VERSION < 28
+#error libfuse 2.8 or newer required
+#endif
+
 #include <dromozoa/bind.hpp>
 
 namespace dromozoa {
@@ -90,6 +94,7 @@ namespace dromozoa {
   int convert(lua_State*, const struct fuse_file_info*);
   int convert(lua_State*, const struct flock*);
   int convert(lua_State*, const struct timespec*);
+  bool convert(lua_State*, int, struct fuse_operations*);
   bool convert(lua_State*, int, struct fuse_conn_info*);
   bool convert(lua_State*, int, struct fuse_file_info*);
   bool convert(lua_State*, int, struct flock*);
