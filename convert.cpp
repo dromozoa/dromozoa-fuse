@@ -151,6 +151,20 @@ namespace dromozoa {
     }
   }
 
+  // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L456
+  // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L468
+  // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L482
+  bool convert(lua_State* L, int index, struct fuse_operations* that) {
+    if (lua_istable(L, index)) {
+      DROMOZOA_OPT_FIELD(flag_nullpath_ok);
+      DROMOZOA_OPT_FIELD(flag_nopath);
+      DROMOZOA_OPT_FIELD(flag_utime_omit_ok);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse_common.h.html#L40
   bool convert(lua_State* L, int index, struct fuse_file_info* that) {
     if (lua_istable(L, index)) {

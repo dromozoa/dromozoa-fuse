@@ -50,6 +50,7 @@ namespace dromozoa {
 
       scoped_ptr<operations> self(new operations(manager));
       fuse_operations* ops = self->get();
+      convert(L, 3, ops);
       int result = fuse_main(argv.size() - 1, const_cast<char**>(argv.data()), ops, self.release());
       luaX_push(L, result);
     }

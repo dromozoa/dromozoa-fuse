@@ -730,18 +730,6 @@ namespace dromozoa {
     // bmap
 
     // TODO impl?
-    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L456
-    // unsigned int flag_nullpath_ok:1;
-
-    // TODO impl?
-    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L468
-    // unsigned int flag_nopath:1;
-
-    // TODO impl?
-    // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L482
-    // unsigned int flag_utime_omit_ok:1;
-
-    // TODO impl?
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/ioctl.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L493
     // ioctl
