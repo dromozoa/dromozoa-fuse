@@ -826,8 +826,10 @@ namespace dromozoa {
     DROMOZOA_SET_OPERATION(fgetattr);
     DROMOZOA_SET_OPERATION(lock);
     DROMOZOA_SET_OPERATION(utimens);
+#if FUSE_VERSION >= 29
     DROMOZOA_SET_OPERATION(flock);
     DROMOZOA_SET_OPERATION(fallocate);
+#endif
   }
 
   fuse_operations* operations::get() {
