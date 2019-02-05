@@ -18,13 +18,11 @@
 #include "common.hpp"
 
 namespace dromozoa {
-  void initialize_buffer(lua_State*);
   void initialize_fill_dir(lua_State*);
   void initialize_main(lua_State*);
   void initialize_state_manager(lua_State*);
 
   void initialize(lua_State* L) {
-    initialize_buffer(L);
     initialize_fill_dir(L);
     initialize_main(L);
     initialize_state_manager(L);
