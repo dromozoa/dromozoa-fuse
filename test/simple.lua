@@ -17,6 +17,7 @@
 
 local unix = require "dromozoa.unix"
 local fuse = require "dromozoa.fuse"
+local buffer = require "test.buffer"
 
 local uid = unix.getuid();
 local gid = unix.getgid();
@@ -357,7 +358,7 @@ end
 function operations:create(path, mode)
   local parent_path, name = split(path)
   update_current_time()
-  local content = fuse.buffer();
+  local content = buffer();
   set(path, {
     attr = setmetatable({
       st_mode = mode_file "0644";
