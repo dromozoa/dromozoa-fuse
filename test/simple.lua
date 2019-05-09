@@ -280,6 +280,12 @@ function operations:chmod(path, mode)
   update_ctime(node)
 end
 
+function operations:open(path, info)
+  if type(info.lock_owner) ~= "string" then
+    error(-ENOENT, 0)
+  end
+end
+
 function operations:read(path, size, offset)
   local node = get(path)
   update_current_time()
