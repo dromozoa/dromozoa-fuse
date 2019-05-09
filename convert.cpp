@@ -19,6 +19,9 @@
 
 #include <math.h>
 
+#include <sstream>
+#include <string>
+
 #define DROMOZOA_SET_FIELD(name) \
   luaX_set_field(L, index, #name, that->name) \
   /**/
@@ -107,7 +110,12 @@ namespace dromozoa {
     DROMOZOA_SET_FIELD(flock_release);
 #endif
     DROMOZOA_SET_FIELD(fh);
-    DROMOZOA_SET_FIELD(lock_owner);
+
+    // lock_owner may not be represented by double
+    std::ostringstream out;
+    out << that->lock_owner;
+    luaX_set_field(L, index, "lock_owner", out.str());
+
     return index;
   }
 
@@ -186,7 +194,14 @@ namespace dromozoa {
       DROMOZOA_OPT_FIELD(flock_release);
 #endif
       DROMOZOA_OPT_FIELD(fh);
-      DROMOZOA_OPT_FIELD(lock_owner);
+
+      luaX_get_field(L, index, "lock_owner");
+      if (luaX_string_reference lock_owner = luaX_to_string(L, -1)) {
+        std::istringstream in(std::string(lock_owner.data(), lock_owner.size()));
+        in >> that->lock_owner;
+      }
+      lua_pop(L, 1);
+
       return true;
     } else {
       return false;
