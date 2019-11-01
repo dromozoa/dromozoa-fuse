@@ -1,8 +1,8 @@
 rockspec_format = "3.0"
 package = "dromozoa-fuse"
-version = "1.18-1"
+version = "1.19-1"
 source = {
-  url = "https://github.com/dromozoa/dromozoa-fuse/releases/download/v1.18/dromozoa-fuse-1.18.tar.gz";
+  url = "https://github.com/dromozoa/dromozoa-fuse/releases/download/v1.19/dromozoa-fuse-1.19.tar.gz";
 }
 description = {
   summary = "Lua bindings for libfuse";
@@ -16,6 +16,6 @@ test = {
 }
 build = {
   type = "command";
-  build_command = [[env PATH="$(LUA_BINDIR):$PATH" CPPFLAGS="$CPPFLAGS -I$(LUA_INCDIR)" CXXFLAGS="$CXXFLAGS -Wall -W -Wno-missing-field-initializers $(CFLAGS)" LDFLAGS="$LDFLAGS -L$(LUA_LIBDIR)" LUA="$(LUA)" ./configure --prefix="$(PREFIX)" && make]];
+  build_command = [[env PATH="$(LUA_BINDIR):$PATH" CPPFLAGS="$CPPFLAGS -I$(LUA_INCDIR)" CXXFLAGS="$CXXFLAGS -Wall -W -Wno-missing-field-initializers $(CFLAGS)" LUA="$(LUA)" ./configure --prefix="$(PREFIX)" && make]];
   install_command = [[make luadir="$(LUADIR)" luaexecdir="$(LIBDIR)/dromozoa" install]];
 }
