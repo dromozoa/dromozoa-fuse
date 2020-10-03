@@ -59,6 +59,35 @@ namespace dromozoa {
     managed_state& operator=(const managed_state&);
   };
 
+  class xattr_cache_item {
+  public:
+    xattr_cache_item(uint64_t time, const char* path, const char* data, size_t size)
+      : time_(time),
+        path_(path),
+        data_(data, size) {}
+
+    uint64_t time() const {
+      return time_;
+    }
+
+    const std::string& data() const {
+      return data_;
+    }
+
+  private:
+    uint64_t time_;
+    std::string path_;
+    std::string data_;
+  };
+
+  class xattr_cache {
+  public:
+
+  private:
+    std::map<std::string, std::string> map_;
+    std::list<std::string> list_;
+  };
+
   class operations {
   public:
     operations(state_manager*);
