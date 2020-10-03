@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>dromozoa-fuse</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/4.0.0/github-markdown.min.css">
 <style>
 .markdown-body {
   box-sizing: border-box;
@@ -67,6 +67,25 @@
     <td>2.9.3</td>
   </tr>
 </table>
+
+<h2>xattrキャッシュ</h2>
+
+<h3>動機</h3>
+
+<p>
+FUSEは属性のキャッシュを持ちますが、一般化された拡張属性のキャッシュはないようです。
+Sambaでstreams_xattrオプションを有効にすると、Windowsのファイルメタ情報を拡張属性に保持するようになります。
+この設定では、user.DOSATTRIBという名前の拡張属性の取得 (listxattrとgetxattr) が頻繁に行われます。
+この拡張属性をキャッシュすることで、高速化を目指します。
+</p>
+
+<h3>実験的な実装</h3>
+
+<p>user.DOSATTRIBという名前について、LRUキャッシュを用意して実験します。</p>
+
+<h3>包括的な実装</h3>
+
+<p>メモリ上のデータ構造を直接いじるプロトコルを提供する。</p>
 
 </div>
 </body>
