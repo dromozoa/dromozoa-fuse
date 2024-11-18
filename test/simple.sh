@@ -1,4 +1,4 @@
-# Copyright (C) 2019 Tomoyuki Fujimori <moyu@dromozoa.com>
+# Copyright (C) 2019,2024 Tomoyuki Fujimori <moyu@dromozoa.com>
 #
 # This file is part of dromozoa-fuse.
 #
@@ -83,7 +83,7 @@ echo bar
 echo baz
 EOH
 chmod 755 test.sh
-./test.sh
+sh -e ./test.sh
 
 mkdir -p foo/bar/baz
 echo 17 >foo/bar/baz/test.txt
