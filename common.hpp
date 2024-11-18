@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2020 Tomoyuki Fujimori <moyu@dromozoa.com>
+// Copyright (C) 2018-2020,2024 Tomoyuki Fujimori <moyu@dromozoa.com>
 //
 // This file is part of dromozoa-fuse.
 //
@@ -34,6 +34,9 @@
 #if FUSE_VERSION < 28
 #error libfuse 2.8 or newer required
 #endif
+
+#include <list>
+#include <map>
 
 #include <dromozoa/bind.hpp>
 
