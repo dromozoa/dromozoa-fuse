@@ -1,4 +1,4 @@
-// Copyright (C) 2018,2019 Tomoyuki Fujimori <moyu@dromozoa.com>
+// Copyright (C) 2018,2019,2024 Tomoyuki Fujimori <moyu@dromozoa.com>
 //
 // This file is part of dromozoa-fuse.
 //
@@ -423,7 +423,7 @@ namespace dromozoa {
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/setxattr.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L259
     // https://github.com/osxfuse/fuse/blob/master/example/fusexmp_fh.c#L788
-#ifdef HAVE_OSXFUSE_FUSE_H
+#ifdef __APPLE__
     int setxattr(const char* path, const char* name, const char* buffer, size_t size, int flags, uint32_t position) {
 #else
     int setxattr(const char* path, const char* name, const char* buffer, size_t size, int flags) {
@@ -443,7 +443,7 @@ namespace dromozoa {
     // https://linuxjm.osdn.jp/html/LDP_man-pages/man2/getxattr.2.html
     // https://dromozoa.github.io/dromozoa-fuse/fuse-2.9.2/fuse.h.html#L263
     // https://github.com/osxfuse/fuse/blob/master/example/fusexmp_fh.c#L817
-#ifdef HAVE_OSXFUSE_FUSE_H
+#ifdef __APPLE__
     int getxattr(const char* path, const char* name, char* buffer, size_t size, uint32_t position) {
 #else
     int getxattr(const char* path, const char* name, char* buffer, size_t size) {
